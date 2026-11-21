@@ -1,0 +1,17 @@
+# Pages 静态资源排除清单（functions/ 等不应作为静态文件公开）
+node_modules
+.git
+.wrangler
+.dev.vars
+.dev.vars.example
+migrations
+functions
+schema.sql
+package.json
+package-lock.json
+wrangler.toml
+README.md
+*.bak
+*.bak-*
+_backup
+index.txt

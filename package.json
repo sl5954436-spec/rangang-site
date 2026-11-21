@@ -1,0 +1,16 @@
+{
+  "name": "rangang-site",
+  "private": true,
+  "version": "1.0.0",
+  "description": "染缸传媒官网 · Cloudflare Pages + D1 + R2",
+  "scripts": {
+    "dev": "wrangler pages dev . --d1=DB --r2=MEDIA --port 8788",
+    "db:init:local": "wrangler d1 execute rangang --local --file=./schema.sql",
+    "db:init": "wrangler d1 execute rangang --remote --file=./schema.sql",
+    "deploy": "wrangler pages deploy . --project-name=rangang-site",
+    "login": "wrangler login"
+  },
+  "devDependencies": {
+    "wrangler": "^4.166.0"
+  }
+}

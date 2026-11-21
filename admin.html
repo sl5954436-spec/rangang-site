@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>染缸后台 · RANGANG CMS</title>
+<style>
+/* ================= 基础 ================= */
+:root{
+  --bg:#0a0a0d;--panel:#121218;--panel2:#17171f;--line:#23232c;
+  --ink:#ececf0;--muted:#8a8a96;--green:#00ff88;--purple:#8a2be2;--blue:#00c8ff;--pink:#ff2e63;--red:#ff4d4d;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:"Helvetica Neue",Helvetica,"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+  font-size:14px;display:flex;overflow:hidden;
+}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-track{background:#0a0a0d;}
+::-webkit-scrollbar-thumb{background:#2a2a33;border-radius:4px;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+/* ================= 侧边栏 ================= */
+#sidebar{
+  width:236px;flex:0 0 236px;background:var(--panel);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;padding:22px 14px;overflow-y:auto;
+}
+.sb-brand{display:flex;align-items:center;gap:12px;padding:4px 8px 20px;border-bottom:1px solid var(--line);margin-bottom:14px;}
+.sb-brand .logo{
+  width:36px;height:36px;object-fit:contain;filter:invert(1);flex:0 0 36px;
+}
+.sb-brand b{font-size:1.02rem;letter-spacing:2px;display:block;line-height:1.2;}
+.sb-brand span{font-size:.6rem;letter-spacing:3px;color:var(--muted);}
+.sb-nav{display:flex;flex-direction:column;gap:4px;}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;
+  color:var(--muted);font-size:.88rem;letter-spacing:1px;font-weight:600;
+  transition:.25s;border:1px solid transparent;cursor:pointer;
+}
+.nav-item:hover{color:var(--ink);background:var(--panel2);}
+.nav-item.on{color:#000;background:var(--green);}
+.nav-item .ico{font-size:1rem;width:20px;text-align:center;}
+.sb-foot{margin-top:auto;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;}
+.sb-foot a{
+  display:block;text-align:center;padding:11px;border-radius:10px;border:1px solid var(--line);
+  font-size:.8rem;letter-spacing:2px;color:var(--muted);transition:.25s;
+}
+.sb-foot a:hover{border-color:var(--purple);color:var(--purple);}
+.sb-foot .live{color:var(--green);border-color:#1d3a2c;}
+.sb-foot .live:hover{border-color:var(--green);color:var(--green);}
+/* ================= 主区 ================= */
+#main{flex:1;display:flex;flex-direction:column;min-width:0;}
+#topbar{
+  height:64px;flex:0 0 64px;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;padding:0 30px;background:rgba(18,18,24,.6);
+}
+.tb-title b{font-size:1.15rem;letter-spacing:2px;}
+.tb-title span{display:block;font-size:.68rem;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.tb-actions{display:flex;gap:10px;align-items:center;}
+.btn{
+  border:1px solid var(--line);background:var(--panel2);color:var(--ink);
+  padding:9px 18px;border-radius:8px;font-size:.82rem;letter-spacing:1px;transition:.25s;
+}
+.btn:hover{border-color:#3a3a48;}
+.btn.primary{background:var(--green);color:#000;border-color:var(--green);font-weight:800;}
+.btn.primary:hover{box-shadow:0 0 18px rgba(0,255,136,.35);}
+.btn.danger{color:var(--pink);border-color:#3a2330;}
+.btn.danger:hover{border-color:var(--pink);}
+.btn.ghost{background:transparent;}
+#view{flex:1;overflow-y:auto;padding:30px;}
+/* ================= 仪表盘 ================= */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:26px;}
+.stat-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 20px;
+  position:relative;overflow:hidden;
+}
+.stat-card::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;opacity:.16;filter:blur(6px);}
+.stat-card.c1::after{background:var(--purple);}
+.stat-card.c2::after{background:var(--blue);}
+.stat-card.c3::after{background:var(--green);}
+.stat-card.c4::after{background:var(--pink);}
+.stat-card.c5::after{background:var(--orange,#ff7a00);}
+.stat-card.c6::after{background:var(--red);}
+.stat-card.c7::after{background:#fff;}
+.stat-card b{font-size:2.1rem;font-weight:900;display:block;letter-spacing:-1px;}
+.stat-card span{font-size:.72rem;color:var(--muted);letter-spacing:2px;}
+.dash-note{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px;line-height:2;color:var(--muted);
+}
+.dash-note b{color:var(--ink);}
+.dash-note code{background:#1d1d26;border:1px solid var(--line);padding:2px 8px;border-radius:6px;color:var(--green);font-size:.82rem;}
+.quick-row{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;}
+/* ================= 列表 ================= */
+.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px;flex-wrap:wrap;}
+.panel-head h2{font-size:1.3rem;letter-spacing:1px;}
+.panel-head p{color:var(--muted);font-size:.8rem;margin-top:4px;}
+.list-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;font-size:.7rem;letter-spacing:2px;color:var(--muted);padding:14px 18px;border-bottom:1px solid var(--line);background:var(--panel2);white-space:nowrap;}
+td{padding:14px 18px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:.88rem;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+td .thumb{width:64px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--line);display:block;}
+td .pill{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid var(--line);font-size:.68rem;color:var(--muted);margin:2px 3px 0 0;}
+.row-act{display:flex;gap:8px;justify-content:flex-end;}
+.row-act button{
+  border:1px solid var(--line);background:transparent;color:var(--muted);
+  padding:6px 14px;border-radius:7px;font-size:.75rem;letter-spacing:1px;transition:.2s;
+}
+.row-act button.edit:hover{border-color:var(--blue);color:var(--blue);}
+.row-act button.del:hover{border-color:var(--pink);color:var(--pink);}
+.empty{padding:46px;text-align:center;color:var(--muted);letter-spacing:2px;font-size:.85rem;}
+/* ================= 表单 ================= */
+.form-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px;max-width:760px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;}
+.form-grid .full{grid-column:1 / -1;}
+.field label{display:block;font-size:.7rem;letter-spacing:2px;color:var(--muted);margin-bottom:7px;}
+.field .req{color:var(--pink);}
+.field input[type="text"],.field input[type="number"],.field textarea,.field select{
+  width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+  color:var(--ink);padding:11px 13px;font-size:.9rem;outline:none;transition:border .25s;
+}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--purple);}
+.field textarea{resize:vertical;min-height:90px;line-height:1.7;}
+.field .hint{font-size:.66rem;color:#5c5c68;margin-top:6px;letter-spacing:.5px;}
+.img-prev{margin-top:8px;}
+.img-prev img{width:120px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--line);}
+.up-row{display:flex;gap:8px;align-items:stretch;}
+.up-row input[type="text"]{flex:1;min-width:0;}
+.up-btn{white-space:nowrap;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--ink);
+  padding:0 14px;font-size:.72rem;letter-spacing:1px;cursor:pointer;transition:border-color .25s,color .25s;}
+.up-btn:hover:not(:disabled){border-color:var(--green);color:var(--green);}
+.up-btn:disabled{opacity:.55;cursor:progress;}
+.media-prev{margin-top:10px;}
+.media-prev img,.media-prev video{width:240px;max-height:160px;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block;background:#000;}
+.media-tip{margin-top:6px;font-size:.66rem;color:#5c5c68;letter-spacing:.5px;}
+.media-tip b{color:var(--green);font-weight:500;}
+.mode-badge{margin-left:14px;font-size:.66rem;letter-spacing:2px;padding:5px 10px;border-radius:99px;
+  border:1px solid var(--line);color:var(--muted);white-space:nowrap;}
+.mode-badge.on{border-color:var(--green);color:var(--green);background:rgba(0,255,136,.08);}
+.form-actions{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap;}
+/* ================= Toast ================= */
+#toast{
+  position:fixed;bottom:30px;left:50%;transform:translate(-50%,80px);z-index:999;
+  background:#000;border:1px solid var(--green);color:var(--green);
+  padding:12px 26px;border-radius:999px;font-size:.82rem;letter-spacing:2px;
+  opacity:0;transition:.35s;pointer-events:none;box-shadow:0 0 24px rgba(0,255,136,.2);
+}
+#toast.show{opacity:1;transform:translate(-50%,0);}
+#toast.err{border-color:var(--pink);color:var(--pink);box-shadow:0 0 24px rgba(255,46,99,.2);}
+/* ================= 备份 ================= */
+.backup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;}
+.bk-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px;}
+.bk-card h3{font-size:1rem;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.bk-card p{color:var(--muted);font-size:.8rem;line-height:1.8;margin-bottom:18px;}
+.bk-card .btn{width:100%;}
+/* ================= 响应式 ================= */
+@media(max-width:900px){
+  body{flex-direction:column;overflow:auto;}
+  #sidebar{width:100%;flex:none;flex-direction:row;align-items:center;padding:12px;gap:10px;overflow-x:auto;border-right:none;border-bottom:1px solid var(--line);}
+  .sb-brand{padding:0 8px 0 0;border-bottom:none;margin:0;border-right:1px solid var(--line);padding-right:12px;}
+  .sb-nav{flex-direction:row;}
+  .nav-item{white-space:nowrap;padding:9px 12px;font-size:.78rem;}
+  .sb-foot{display:none;}
+  #topbar{padding:0 18px;}
+  #view{padding:18px;}
+  .form-grid{grid-template-columns:1fr;}
+  th:nth-child(n+3),td:nth-child(n+3){display:none;}
+}
+</style>
+</head>
+<body>
+<!-- 侧边栏 -->
+<aside id="sidebar">
+  <div class="sb-brand">
+    <img class="logo" src="assets/logo.png" alt="染缸传媒">
+    <div><b>染缸后台</b><span>RANGANG CMS</span></div>
+  </div>
+  <nav class="sb-nav" id="sb-nav"></nav>
+  <div class="sb-foot">
+    <a href="index.html" target="_blank" class="live">打开官网预览 ↗</a>
+    <a href="#" id="btn-backup">导出数据备份</a>
+  </div>
+</aside>
+<!-- 主区 -->
+<main id="main">
+  <header id="topbar">
+    <div class="tb-title"><b id="tb-name">仪表盘</b><span id="tb-desc">DASHBOARD</span></div>
+    <div class="tb-actions">
+      <button class="btn ghost" id="btn-export">导出 JSON</button>
+      <button class="btn" id="btn-import">导入 JSON</button>
+    </div>
+  </header>
+  <section id="view"></section>
+</main>
+<div id="toast"></div>
+<input type="file" id="import-file" accept=".json,application/json" hidden>
+<script>
+/* ================= 数据层 ================= */
+var DATA_KEY = 'rangang_data_v1';
+var DEFAULT_DATA = {
+  _v: 3,
+  config: {
+    brand: '染缸 RANGANG',
+    slogan: '染缸传媒 · 重塑感官 · 渲染夜色',
+    tags: ['平面设计','动态视觉 / VJ','声光电一站式','夜店品牌管理','创意派对策划'],
+    email: 'HELLO@RANGANG.MEDIA',
+    phone: '+86 138-0000-0000',
+    copyright: '2026',
+    bpm: '128',
+    sys: 'ONLINE',
+    vat: 'FULL',
+    wx_enable: 'off',
+    wx_service: 'serverchan',
+    wx_key: '',
+    about_img: ''
+  },
+  hosts: [
+    {id:1, name:'陆岩峰', en:'LU YANFENG', role:'染缸传媒创始人', desc:'二十年品牌经营，策划大型夜店、音乐节，深耕艺人调度。', img:'assets/host-1.png'}
+  ],
+  services: [
+    {id:1, num:'FORMULA / 01', title:'视觉显影', en:'VISUAL DEVELOP', desc:'平面与动态的双线输出。我们用像素与光斑，构建狂欢的幻觉。', tags:['主视觉KV','夜店VI','VJ素材','裸眼3D','宣传片'], glow:'rgba(138,43,226,.4)'},
+    {id:2, num:'FORMULA / 02', title:'声光通电', en:'AV & LIGHT', desc:'懂设计的工程，懂工程的艺术。空间、灯光、音响、机械一站统筹。', tags:['空间视觉规划','灯光编程','音响顾问','舞台特效'], glow:'rgba(0,200,255,.35)'},
+    {id:3, num:'FORMULA / 03', title:'品牌注入', en:'BRAND INFUSE', desc:'从0到1孵化夜店品牌，或为老场子重塑灵魂，操盘全域传播。', tags:['品牌全案','升级重塑','自媒体代运营','公关传播'], glow:'rgba(0,255,136,.3)'},
+    {id:4, num:'FORMULA / 04', title:'情绪催化', en:'MOOD CATALYST', desc:'主题派对IP、艺人宣发、沉浸互动——制造让城市失眠的解药。', tags:['派对IP','DJ宣发','演艺对接','沉浸玩法'], glow:'rgba(255,46,99,.35)'}
+  ],
+  cases: [
+    {id:1, badge:'CASE / 001', kicker:'CYBERPUNK CLUB · 2023 · 品牌全案 + 声光电', title:'霓虹废土 重启计划', desc:'停业半年的老场子，90天完成VI重塑、光效重编程与开业派对IP，一场彻底的"感染"。', stats:[{v:'3000+',l:'开业客流'},{v:'500W',l:'社媒曝光'},{v:'90天',l:'全案周期'}], img:'assets/case-1.png', video:'assets/case-1.mp4'},
+    {id:2, badge:'CASE / 002', kicker:'TECHNO RAVE · 2024 · 派对企划 + 动态视觉', title:'深渊漩涡 主题派对', desc:'以染缸漩涡为概念原点，定制VJ视觉与激光阵列编程，8小时沉浸式视听风暴。', stats:[{v:'3min',l:'门票售罄'},{v:'8h',l:'沉浸时长'},{v:'12组',l:'艺人阵容'}], img:'assets/case-2.png', video:'assets/case-2.mp4'},
+    {id:3, badge:'CASE / 003', kicker:'MAINSTREAM CLUB · 2024 · 声光电一站式', title:'脉冲工厂 光效重编程', desc:'不改一砖一瓦，仅凭灯光编程、音响调校与大屏视觉升级，体感温度提升一个量级。', stats:[{v:'2.1x',l:'留客时长'},{v:'0',l:'硬装改动'},{v:'45天',l:'交付周期'}], img:'assets/case-3.png', video:'assets/case-3.mp4'},
+    {id:4, badge:'CASE / 004', kicker:'NEW BORN CLUB · 2024 · 品牌孵化 + 代运营', title:'午夜染坊 从0到1', desc:'命名、VI、空间视觉、开业季宣发全链路操盘，首月即登同城热门榜TOP1。', stats:[{v:'TOP1',l:'同城热门'},{v:'60天',l:'孵化周期'},{v:'18W',l:'首月曝光'}], img:'assets/case-4.png', video:'assets/case-4.mp4'},
+  ],
+  steps: [
+    {id:1, n:'01', title:'诊断', en:'DIAGNOSE', desc:'实地勘场、竞品扫描、客群画像，找出场子的"病根"。'},
+    {id:2, n:'02', title:'配方', en:'FORMULATE', desc:'输出品牌概念、视觉方向与声光电预算方案。'},
+    {id:3, n:'03', title:'渲染', en:'RENDER', desc:'平面、动态、空间三线并行，高频迭代直至饱和。'},
+    {id:4, n:'04', title:'注入', en:'INFUSE', desc:'现场施工统筹、灯光编程、设备联调，一针入魂。'},
+    {id:5, n:'05', title:'引爆', en:'DETONATE', desc:'开业/派对宣发操盘，数据复盘，持续陪跑。'}
+  ],
+  team: [
+    {id:1, dye:'DYE-01', name:'陆岩峰', en:'LU YANFENG', role:'染缸传媒创始人', desc:'二十年品牌经营，策划大型夜店、音乐节，深耕艺人调度。', img:'assets/host-1.png'},
+    {id:2, dye:'DYE-02', name:'阿缸', en:'GANG', role:'视觉总监 · VJ', desc:'酸性设计信徒，控台前的即兴演奏者。他的视觉永远比drop早半拍到位。', img:'assets/team-2.png'},
+    {id:3, dye:'DYE-03', name:'伏特', en:'VOLT', role:'声光电工程总监', desc:'灯光编程与音响系统双修。能把预算花在刀刃上，也能把刀刃做成激光。', img:'assets/team-3.png'},
+    {id:4, dye:'DYE-04', name:'夜航', en:'NAVI', role:'品牌操盘 · 宣发', desc:'社交平台流量猎手。经手的开业宣发，平均首周曝光破百万。', img:'assets/team-4.png'}
+  ],
+  quotes: [
+    {id:1, text:'"把场子交给染缸之后，我们只需要担心一件事——门口排队太长。"', by:'—— 某连锁夜店品牌 主理人 / MR. K'},
+    {id:2, text:'"他们不是乙方，是和你一起熬夜、一起听drop、一起为客流发愁的合伙人。"', by:'—— NEON WASTELAND 投资人 / LISA'},
+    {id:3, text:'"第一次看到他们做的VJ素材，我就知道这场派对已经赢了一半。"', by:'—— 国际百大DJ 巡演统筹 / AGENT 7'}
+  ]
+};
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function loadData(){
+  try{
+    var raw = localStorage.getItem(DATA_KEY);
+    if(raw){
+      var d = JSON.parse(raw);
+      var out = {};
+      out.config = Object.assign({}, DEFAULT_DATA.config, d.config || {});
+      ['services','cases','steps','team','quotes','hosts'].forEach(function(k){
+        out[k] = Array.isArray(d[k]) ? d[k] : DEFAULT_DATA[k];
+      });
+      if(!d._v || d._v < 2){ out.hosts = DEFAULT_DATA.hosts; }
+      if(!d._v || d._v < 3){
+        var t2 = (out.team || []).map(function(m){ return JSON.parse(JSON.stringify(m)); });
+        for(var i2=0;i2<t2.length;i2++){
+          if(t2[i2].name === '老染'){ t2[i2] = JSON.parse(JSON.stringify(DEFAULT_DATA.team[0])); break; }
+        }
+        out.team = t2;
+      }
+      return out;
+    }
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+var SITE = loadData();
+/* ================= 线上模式（Cloudflare D1） ================= */
+var API = { mode:false, updatedAt:null, messages:[] };
+function adminToken(force){
+  var t = '';
+  try{ t = localStorage.getItem('rangang_admin_token') || ''; }catch(e){}
+  if(!t || force){
+    var input = prompt('请输入后台管理密码（Cloudflare 里配置的 ADMIN_TOKEN）：', t);
+    if(input === null) return '';
+    t = String(input).trim();
+    try{ if(t) localStorage.setItem('rangang_admin_token', t); }catch(e){}
+  }
+  return t;
+}
+function apiHeaders(extra){
+  var h = Object.assign({'accept':'application/json'}, extra || {});
+  var t = adminToken();
+  if(t) h['x-admin-token'] = t;
+  return h;
+}
+function remoteSave(){
+  var t = adminToken();
+  if(!t){ toast('未填写管理密码，只保存在本机浏览器', true); return; }
+  fetch('/api/site', {
+    method:'PUT',
+    headers: apiHeaders({'content-type':'application/json'}),
+    body: JSON.stringify(SITE)
+  }).then(function(r){ return r.json().catch(function(){ return {}; }); }).then(function(res){
+    if(res && res.ok){
+      API.updatedAt = res.updatedAt;
+      toast('已保存并同步到 D1');
+    }else if(res && res.error === 'unauthorized'){
+      try{ localStorage.removeItem('rangang_admin_token'); }catch(e){}
+      toast('管理密码不正确，请重新输入', true);
+    }else{
+      toast('同步失败：' + ((res && (res.error || res.message)) || '未知错误'), true);
+    }
+  }).catch(function(err){ toast('同步失败：' + err, true); });
+}
+function save(){
+  try{
+    localStorage.setItem(DATA_KEY, JSON.stringify(SITE));
+    if(API.mode){ remoteSave(); }
+    else{ toast('已保存 · 打开官网即可看到更新'); }
+  }catch(e){ toast('保存失败：浏览器本地存储不可用', true); }
+}
+function refreshMessages(){
+  if(!API.mode) return Promise.resolve([]);
+  var t = localStorage.getItem('rangang_admin_token') || '';
+  if(!t) return Promise.resolve([]);
+  return fetch('/api/message', { headers: apiHeaders() })
+    .then(function(r){ return r.json(); })
+    .then(function(res){
+      if(res && res.ok && Array.isArray(res.items)){
+        API.messages = res.items.map(function(m){
+          return { id:m.id, name:m.name, contact:m.contact, type:m.type, brief:m.brief,
+                   time:(m.created_at || '').replace('T', ' ').slice(0, 19) };
+        });
+        if(cur === 'messages') renderModule('messages');
+      }
+      return API.messages;
+    }).catch(function(){ return API.messages; });
+}
+function modeBadge(){
+  var badge = document.getElementById('mode-badge');
+  if(!badge){
+    var bar = document.getElementById('topbar');
+    if(!bar) return;
+    badge = document.createElement('span');
+    badge.id = 'mode-badge';
+    bar.appendChild(badge);
+  }
+  badge.textContent = API.mode ? 'D1 在线同步' : '本地模式';
+  badge.className = 'mode-badge' + (API.mode ? ' on' : '');
+}
+function toast(msg, isErr){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('err', !!isErr);
+  t.classList.add('show');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+/* ================= 模块定义 ================= */
+var MODULES = {
+  dashboard: { title:'仪表盘', sub:'DASHBOARD', icon:'◈', render: function(){ renderDashboard(); } },
+  config: {
+    title:'站点配置', sub:'SITE CONFIG', icon:'⚙',
+    render: function(){
+      var c = SITE.config;
+      view.innerHTML =
+        '<div class="panel-head"><div><h2>站点配置</h2><p>品牌信息、联系方式和首屏元素，保存后官网同步生效。</p></div></div>' +
+        '<div class="form-card"><div class="form-grid">' +
+        fieldText('brand','品牌名','染缸 RANGANG',c.brand,true) +
+        fieldText('slogan','首屏标语','染缸传媒 · 重塑感官 · 渲染夜色',c.slogan,true) +
+        fieldList('tags','服务标签（逗号分隔）','平面设计, 动态视觉 / VJ',c.tags) +
+        fieldText('email','联系邮箱','HELLO@RANGANG.MEDIA',c.email) +
+        fieldText('phone','联系电话','+86 138-0000-0000',c.phone) +
+        fieldText('copyright','版权年份','2026',c.copyright) +
+        fieldText('bpm','BPM 显示','128',c.bpm) +
+        fieldText('sys','SYSTEM 状态','ONLINE',c.sys) +
+        fieldText('vat','VAT 状态','FULL',c.vat) +
+        fieldSelect('wx_enable','微信通知',['on|开启通知','off|关闭'],c.wx_enable) +
+        fieldSelect('wx_service','推送服务',['serverchan|Server酱（方糖）','pushplus|PushPlus'],c.wx_service) +
+        fieldText('wx_key','推送 Key / SendKey','微信扫码关注服务后获取',c.wx_key) +
+        fieldText('about_img','关于区视觉图（留空=默认 LOGO）','assets/你的图.png 或 https://…',c.about_img) +
+        '<div class="field full"><p class="hint">开启后，访客在官网「入缸申请」提交留言，微信会实时收到通知。Server酱：sct.ftqq.com 扫码关注「方糖」获取 SendKey；PushPlus：pushplus.plus 扫码关注获取 token。</p></div>' +
+        '</div><div class="form-actions"><button class="btn primary" id="cfg-save">保存配置</button>' +
+        '<button class="btn ghost" data-nav="dashboard">返回</button></div></div>';
+      document.getElementById('cfg-save').addEventListener('click', function(){
+        var o = collectFields(document.querySelector('.form-card'));
+        ['brand','slogan','email','phone','copyright','bpm','sys','vat','wx_enable','wx_service','wx_key','about_img'].forEach(function(k){ if(o[k] !== undefined) c[k] = o[k]; });
+        if(o.tags) c.tags = o.tags;
+        save();
+      });
+    }
+  },
+  services: {
+    title:'服务配方', sub:'SERVICES', icon:'✦',
+    schema: [
+      {key:'num', label:'编号', type:'text', ph:'FORMULA / 01', required:true},
+      {key:'title', label:'名称', type:'text', ph:'视觉显影', required:true},
+      {key:'en', label:'英文名', type:'text', ph:'VISUAL DEVELOP'},
+      {key:'desc', label:'描述', type:'textarea', ph:'一句话说明这项服务…'},
+      {key:'tags', label:'标签（逗号分隔）', type:'list', ph:'主视觉KV, 夜店VI'},
+      {key:'glow', label:'悬停光晕颜色', type:'color', options:['rgba(138,43,226,.4)','rgba(0,200,255,.35)','rgba(0,255,136,.3)','rgba(255,46,99,.35)']}
+    ],
+    cols: ['num','title','tags'],
+    section: 'services'
+  },
+  cases: {
+    title:'案例战绩', sub:'WORKS', icon:'◈',
+    schema: [
+      {key:'badge', label:'编号徽标', type:'text', ph:'CASE / 001', required:true},
+      {key:'title', label:'项目名称', type:'text', ph:'霓虹废土 重启计划', required:true},
+      {key:'kicker', label:'类别行', type:'text', ph:'CYBERPUNK CLUB · 2023 · 品牌全案 + 声光电'},
+      {key:'desc', label:'项目描述', type:'textarea', ph:'项目背景与成果…'},
+      {key:'img', label:'封面图（assets/ 路径或网址）', type:'img', ph:'assets/case-1.png'},
+      {key:'video', label:'案例视频（留空=用内置动效，填 none 关闭视频）', type:'video', ph:'assets/case-1.mp4'},
+      {key:'s1v', label:'指标 1 数值', type:'text', ph:'3000+'},
+      {key:'s1l', label:'指标 1 标签', type:'text', ph:'开业客流'},
+      {key:'s2v', label:'指标 2 数值', type:'text', ph:'500W'},
+      {key:'s2l', label:'指标 2 标签', type:'text', ph:'社媒曝光'},
+      {key:'s3v', label:'指标 3 数值', type:'text', ph:'90天'},
+      {key:'s3l', label:'指标 3 标签', type:'text', ph:'全案周期'}
+    ],
+    cols: ['badge','title','img'],
+    section: 'cases',
+    expand: function(it){
+      var st = it.stats || [];
+      for(var i=0;i<3;i++){
+        it['s'+(i+1)+'v'] = st[i] ? st[i].v : '';
+        it['s'+(i+1)+'l'] = st[i] ? st[i].l : '';
+      }
+    },
+    collect: function(o){
+      o.stats = [{v:o.s1v,l:o.s1l},{v:o.s2v,l:o.s2l},{v:o.s3v,l:o.s3l}];
+      delete o.s1v; delete o.s1l; delete o.s2v; delete o.s2l; delete o.s3v; delete o.s3l;
+      return o;
+    }
+  },
+  steps: {
+    title:'流程步骤', sub:'PROCESS', icon:'⇶',
+    schema: [
+      {key:'n', label:'序号', type:'text', ph:'01', required:true},
+      {key:'title', label:'步骤名', type:'text', ph:'诊断', required:true},
+      {key:'en', label:'英文', type:'text', ph:'DIAGNOSE'},
+      {key:'desc', label:'说明', type:'textarea', ph:'这一步做什么…'}
+    ],
+    cols: ['n','title','en'],
+    section: 'steps'
+  },
+  team: {
+    title:'团队成员', sub:'CREW', icon:'◆',
+    schema: [
+      {key:'dye', label:'编号', type:'text', ph:'DYE-01', required:true},
+      {key:'name', label:'姓名', type:'text', ph:'老染', required:true},
+      {key:'en', label:'英文名', type:'text', ph:'RAN'},
+      {key:'role', label:'职位', type:'text', ph:'创始人 · 创意总监'},
+      {key:'desc', label:'简介', type:'textarea', ph:'一句人物介绍…'},
+      {key:'img', label:'头像（assets/ 路径或网址）', type:'img', ph:'assets/team-1.png'}
+    ],
+    cols: ['dye','name','role'],
+    section: 'team'
+  },
+  hosts: {
+    title:'主理人介绍', sub:'HOSTS', icon:'♛',
+    schema: [
+      {key:'name', label:'姓名', type:'text', ph:'老染', required:true},
+      {key:'en', label:'英文名', type:'text', ph:'RAN'},
+      {key:'role', label:'职位', type:'text', ph:'创始人 · 主理人'},
+      {key:'desc', label:'介绍', type:'textarea', ph:'一段主理人介绍…'},
+      {key:'img', label:'头像（assets/ 路径或网址）', type:'img', ph:'assets/team-1.png'}
+    ],
+    cols: ['name','role','img'],
+    section: 'hosts'
+  },
+  quotes: {
+    title:'语录管理', sub:'QUOTES', icon:'❝',
+    schema: [
+      {key:'text', label:'语录内容', type:'textarea', ph:'"一句让场子沸腾的话…"', required:true},
+      {key:'by', label:'署名', type:'text', ph:'—— 某夜店品牌 主理人 / MR. K'}
+    ],
+    cols: ['text','by'],
+    section: 'quotes'
+  },
+  messages: { title:'留言管理', sub:'MESSAGES', icon:'✉', render: function(){ renderMessages(); } },
+  backup: { title:'数据备份', sub:'BACKUP', icon:'⬇', render: function(){ renderBackup(); } }
+};
+var NAV_ORDER = ['dashboard','config','services','cases','steps','team','hosts','quotes','messages','backup'];
+var view = document.getElementById('view');
+var cur = 'dashboard';
+/* ================= 表单字段 ================= */
+function fieldText(k,label,ph,v,req){
+  return '<div class="field"><label>' + label + (req?' <span class="req">*</span>':'') + '</label>' +
+    '<input type="text" data-k="' + k + '" placeholder="' + esc(ph||'') + '" value="' + esc(v||'') + '"></div>';
+}
+function fieldList(k,label,ph,v){
+  return '<div class="field"><label>' + label + '</label>' +
+    '<input type="text" data-k="' + k + '" data-list="1" placeholder="' + esc(ph||'') + '" value="' + esc((v||[]).join(', ')) + '"></div>';
+}
+function fieldTextarea(k,label,ph,v,req){
+  return '<div class="field full"><label>' + label + (req?' <span class="req">*</span>':'') + '</label>' +
+    '<textarea data-k="' + k + '" placeholder="' + esc(ph||'') + '">' + esc(v||'') + '</textarea></div>';
+}
+function fieldMedia(k,label,ph,v,kind){
+  var isVideo = kind === 'video';
+  var preview = '';
+  if(v && v !== 'none'){
+    preview = '<div class="media-prev">' + (isVideo
+      ? '<video src="' + esc(v) + '" muted playsinline preload="metadata" controls></video>'
+      : '<img src="' + esc(v) + '" alt="预览">') + '</div>';
+  }
+  return '<div class="field full"><label>' + label + '</label>' +
+    '<div class="up-row"><input type="text" data-k="' + k + '" placeholder="' + esc(ph||'') + '" value="' + esc(v||'') + '">' +
+    '<button type="button" class="up-btn" data-upload="' + kind + '">上传' + (isVideo ? '视频' : '图片') + '</button></div>' +
+    preview +
+    '<div class="media-tip">点「上传」选本地文件，会直接复制进 <b>assets/</b> 并自动填好路径；也可以手动填地址。</div></div>';
+}
+function fieldImg(k,label,ph,v){ return fieldMedia(k,label,ph,v,'img'); }
+function fieldColor(k,label,options,v){
+  var opts = (options||[]).map(function(o){
+    return '<option value="' + esc(o) + '"' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>';
+  }).join('');
+  return '<div class="field"><label>' + label + '</label>' +
+    '<select data-k="' + k + '">' + opts + '</select></div>';
+}
+function fieldSelect(k,label,options,v){
+  if(typeof options === 'string') options = options.split('|');
+  var opts = (options||[]).map(function(o){
+    var p = String(o).split('|');
+    return '<option value="' + esc(p[0]) + '"' + (p[0] === v ? ' selected' : '') + '>' + esc(p[1] || p[0]) + '</option>';
+  }).join('');
+  return '<div class="field"><label>' + label + '</label>' +
+    '<select data-k="' + k + '">' + opts + '</select></div>';
+}
+function schemaField(f, v){
+  if(f.type === 'textarea') return fieldTextarea(f.key, f.label, f.ph, v, f.required);
+  if(f.type === 'list') return fieldList(f.key, f.label, f.ph, v);
+  if(f.type === 'img') return fieldImg(f.key, f.label, f.ph, v);
+  if(f.type === 'video') return fieldMedia(f.key, f.label, f.ph, v, 'video');
+  if(f.type === 'color') return fieldColor(f.key, f.label, f.options, v);
+  return fieldText(f.key, f.label, f.ph, v, f.required);
+}
+function collectFields(root){
+  var o = {};
+  root.querySelectorAll('[data-k]').forEach(function(el){
+    var k = el.getAttribute('data-k');
+    var v = el.value.trim();
+    if(el.tagName === 'SELECT'){ o[k] = v; return; }
+    if(el.getAttribute('data-list')){ o[k] = v.split(/[,，]/).map(function(s){return s.trim();}).filter(Boolean); return; }
+    o[k] = v;
+  });
+  return o;
+}
+/* ================= 通用列表/表单 ================= */
+function renderModule(sec){
+  var M = MODULES[sec];
+  if(M.render){ M.render(); return; }
+  var items = SITE[M.section];
+  var ths = M.cols.map(function(c){ return '<th>' + c + '</th>'; }).join('');
+  var rows = items.length ? items.map(function(it, i){
+    var tds = M.cols.map(function(c){
+      var v = it[c];
+      if(c === 'img') return '<td>' + (v ? '<img class="thumb" src="' + esc(v) + '" alt="">' : '') + '</td>';
+      if(Array.isArray(v)) return '<td>' + v.map(function(t){ return '<span class="pill">' + esc(t) + '</span>'; }).join('') + '</td>';
+      if(String(v||'').length > 46) v = String(v).slice(0,46) + '…';
+      return '<td>' + esc(v || '—') + '</td>';
+    }).join('');
+    tds += '<td><div class="row-act"><button class="edit" data-act="edit" data-idx="' + i + '">编辑</button>' +
+      '<button class="del" data-act="del" data-idx="' + i + '">删除</button></div></td>';
+    return '<tr>' + tds + '</tr>';
+  }).join('') : '<tr><td colspan="' + (M.cols.length + 1) + '"><div class="empty">暂无内容，点击右上角「新增」创建</div></td></tr>';
+  view.innerHTML =
+    '<div class="panel-head"><div><h2>' + M.title + '</h2><p>' + M.sub + '</p></div>' +
+    '<button class="btn primary" data-act="add">+ 新增</button></div>' +
+    '<div class="list-card"><table><thead><tr>' + ths + '<th style="text-align:right">操作</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table></div>';
+}
+function renderForm(sec, idx){
+  var M = MODULES[sec];
+  var items = SITE[M.section];
+  var it = idx != null ? items[idx] : null;
+  var copy = it ? JSON.parse(JSON.stringify(it)) : {};
+  if(M.expand) M.expand(copy);
+  var fields = M.schema.map(function(f){
+    var v = copy[f.key];
+    if(f.type === 'list') v = copy[f.key] || [];
+    return schemaField(f, v);
+  }).join('');
+  var isNew = it == null;
+  view.innerHTML =
+    '<div class="panel-head"><div><h2>' + (isNew ? '新增' : '编辑') + ' · ' + M.title + '</h2><p>填写完成后点击保存，官网同步生效。</p></div></div>' +
+    '<div class="form-card"><div class="form-grid">' + fields + '</div>' +
+    '<div class="form-actions">' +
+    '<button class="btn primary" data-act="save" data-idx="' + (idx != null ? idx : 'new') + '">保存</button>' +
+    '<button class="btn ghost" data-act="back">取消</button></div></div>';
+}
+function saveForm(sec, idx){
+  var M = MODULES[sec];
+  var items = SITE[M.section];
+  var o = collectFields(document.querySelector('.form-card'));
+  if(M.collect) o = M.collect(o);
+  var reqMiss = M.schema.some(function(f){ return f.required && !String(o[f.key]||'').trim(); });
+  if(reqMiss){ toast('请填写必填项（带 *）', true); return; }
+  if(idx === 'new' || idx == null){
+    o.id = Date.now();
+    items.push(o);
+  }else{
+    var old = items[idx];
+    var keep = {};
+    Object.keys(old).forEach(function(k){ if(!(k in o)) keep[k] = old[k]; });
+    items[idx] = Object.assign({}, keep, o);
+  }
+  save();
+  renderModule(sec);
+}
+/* ================= 仪表盘 ================= */
+function renderDashboard(){
+  var n = {
+    services: SITE.services.length,
+    cases: SITE.cases.length,
+    steps: SITE.steps.length,
+    team: SITE.team.length,
+    quotes: SITE.quotes.length,
+    messages: getMessages().length,
+    hosts: SITE.hosts.length
+  };
+  view.innerHTML =
+    '<div class="panel-head"><div><h2>仪表盘</h2><p>染缸官网内容总览 · 模块化管理</p></div></div>' +
+    '<div class="stat-grid">' +
+    '<div class="stat-card c1"><b>' + n.services + '</b><span>服务配方</span></div>' +
+    '<div class="stat-card c2"><b>' + n.cases + '</b><span>案例战绩</span></div>' +
+    '<div class="stat-card c3"><b>' + n.steps + '</b><span>流程步骤</span></div>' +
+    '<div class="stat-card c4"><b>' + n.team + '</b><span>团队成员</span></div>' +
+    '<div class="stat-card c5"><b>' + n.quotes + '</b><span>语录</span></div>' +
+    '<div class="stat-card c6"><b>' + n.messages + '</b><span>访客留言</span></div>' +
+    '<div class="stat-card c7"><b>' + n.hosts + '</b><span>主理人</span></div>' +
+    '</div>' +
+    '<div class="dash-note">' +
+    '<b>数据状态：</b>' + (API.mode
+      ? '已连接 Cloudflare D1，点「保存」后内容写入云端，任何人打开官网都是最新版本；访客留言同样存进 D1。'
+      : '本地模式（未检测到 /api/site）：修改存在浏览器 localStorage，只有本机同一浏览器可见；部署到 Cloudflare Pages 后自动切到 D1 同步。') +
+    '<br><b>备份提醒：</b>定期在「数据备份」模块导出 JSON，换电脑或清缓存前先导出，避免内容丢失。' +
+    '<div class="quick-row">' +
+    '<button class="btn primary" data-nav="services">管理服务配方</button>' +
+    '<button class="btn" data-nav="cases">管理案例战绩</button>' +
+    '<button class="btn" data-nav="messages">查看访客留言</button>' +
+    '<button class="btn" data-nav="config">站点配置</button>' +
+    '<a class="btn ghost" href="index.html" target="_blank">打开官网预览 ↗</a>' +
+    '</div></div>';
+}
+/* ================= 留言 ================= */
+function getMessages(){
+  if(API.mode) return API.messages || [];
+  try{
+    var a = JSON.parse(localStorage.getItem('rangang_messages_v1') || '[]');
+    return Array.isArray(a) ? a : [];
+  }catch(e){ return []; }
+}
+function saveMessages(arr){
+  try{ localStorage.setItem('rangang_messages_v1', JSON.stringify(arr)); }catch(e){}
+}
+function renderMessages(){
+  var arr = getMessages();
+  var rows = arr.length ? arr.map(function(m, i){
+    var brief = String(m.brief || '');
+    return '<tr><td>' + esc(m.name || '—') + '</td><td>' + esc(m.contact || '—') + '</td><td>' + esc(m.type || '—') + '</td>' +
+      '<td class="msg-brief" title="' + esc(brief) + '">' + esc(brief.slice(0, 28)) + (brief.length > 28 ? '…' : '') + '</td>' +
+      '<td>' + esc(m.time || '—') + '</td>' +
+      '<td><div class="row-act"><button class="del" data-act="delmsg" data-idx="' + i + '">删除</button></div></td></tr>';
+  }).join('') : '<tr><td colspan="6"><div class="empty">暂无留言。访客在官网「入缸申请」提交后会自动出现在这里。</div></td></tr>';
+  view.innerHTML =
+    '<div class="panel-head"><div><h2>留言管理</h2><p>官网「入缸申请」表单的访客留言，提交后实时同步到此处。</p></div>' +
+    '<div style="display:flex;gap:10px">' +
+    '<button class="btn" data-act="refreshmsg">刷新</button>' +
+    (arr.length ? '<button class="btn danger" data-act="clearmsg">清空全部</button>' : '') + '</div></div>' +
+    '<div class="list-card"><table><thead><tr><th>称呼</th><th>联系方式</th><th>需求类型</th><th>简述</th><th>提交时间</th><th style="text-align:right">操作</th></tr></thead>' +
+    '<tbody>' + rows + '</tbody></table></div>';
+}
+/* ================= 备份 ================= */
+function renderBackup(){
+  view.innerHTML =
+    '<div class="panel-head"><div><h2>数据备份</h2><p>导出 / 导入 / 恢复，为你的内容上双保险。</p></div></div>' +
+    '<div class="backup-grid">' +
+    '<div class="bk-card"><h3>⬇ 导出备份</h3><p>将全部内容保存为 JSON 文件，可存档或迁移到其他电脑。建议每次大改后导出一次。</p>' +
+    '<button class="btn primary" id="bk-export">导出 JSON 文件</button></div>' +
+    '<div class="bk-card"><h3>⬆ 导入恢复</h3><p>选择之前导出的 JSON 文件，覆盖当前内容。导入后请刷新官网查看。</p>' +
+    '<button class="btn" id="bk-import">选择 JSON 文件</button></div>' +
+    '<div class="bk-card"><h3>↺ 恢复默认</h3><p>将全部模块恢复为出厂默认内容，当前所有修改将被覆盖，操作不可撤销。</p>' +
+    '<button class="btn danger" id="bk-reset">恢复默认内容</button></div>' +
+    '</div>';
+  document.getElementById('bk-export').addEventListener('click', exportData);
+  document.getElementById('bk-import').addEventListener('click', function(){ document.getElementById('import-file').click(); });
+  document.getElementById('bk-reset').addEventListener('click', function(){
+    if(confirm('确定恢复为默认内容？当前所有修改将被覆盖。')){
+      SITE = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      save(); render(); toast('已恢复默认内容');
+    }
+  });
+}
+function exportData(){
+  try{
+    var blob = new Blob([JSON.stringify(SITE, null, 2)], {type:'application/json'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'rangang-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    toast('已导出备份文件');
+  }catch(e){ toast('导出失败', true); }
+}
+/* ================= 路由与事件 ================= */
+function render(){
+  document.querySelectorAll('.nav-item').forEach(function(el){
+    el.classList.toggle('on', el.getAttribute('data-nav') === cur);
+  });
+  document.getElementById('tb-name').textContent = MODULES[cur].title;
+  document.getElementById('tb-desc').textContent = MODULES[cur].sub;
+  renderModule(cur);
+}
+document.getElementById('sb-nav').innerHTML = NAV_ORDER.map(function(k){
+  var m = MODULES[k];
+  return '<div class="nav-item" data-nav="' + k + '"><span class="ico">' + m.icon + '</span>' + m.title + '</div>';
+}).join('');
+function route(){
+  var h = location.hash.replace(/^#\/?/, '');
+  if(MODULES[h]) cur = h;
+}
+document.getElementById('sb-nav').addEventListener('click', function(e){
+  var t = e.target.closest('.nav-item');
+  if(!t) return;
+  cur = t.getAttribute('data-nav');
+  location.hash = '#/' + cur;
+  render();
+});
+window.addEventListener('hashchange', function(){ route(); render(); });
+view.addEventListener('click', function(e){
+  var nav = e.target.closest('[data-nav]');
+  if(nav){ cur = nav.getAttribute('data-nav'); location.hash = '#/' + cur; render(); return; }
+  var act = e.target.closest('[data-act]');
+  if(!act) return;
+  var a = act.getAttribute('data-act');
+  var idx = act.getAttribute('data-idx');
+  var sec = findSection();
+  if(a === 'add'){ renderForm(sec, null); return; }
+  if(a === 'edit'){ renderForm(sec, parseInt(idx, 10)); return; }
+  if(a === 'back'){ renderModule(sec); return; }
+  if(a === 'save'){ saveForm(sec, idx); return; }
+  if(a === 'del'){
+    if(confirm('确定删除这条内容？')){
+      SITE[MODULES[sec].section].splice(parseInt(idx, 10), 1);
+      save(); renderModule(sec);
+    }
+    return;
+  }
+  if(a === 'refreshmsg'){
+    refreshMessages().then(function(){ renderMessages(); toast(API.mode ? '已刷新留言' : '本地模式，留言仅保存在本机'); });
+    return;
+  }
+  if(a === 'delmsg'){
+    if(confirm('确定删除这条留言？')){
+      var arr = getMessages();
+      var target = arr[parseInt(idx, 10)] || {};
+      if(API.mode){
+        fetch('/api/message?id=' + encodeURIComponent(target.id || ''), {method:'DELETE', headers:apiHeaders()})
+          .then(function(r){ return r.json(); })
+          .then(function(res){
+            if(res && res.ok){ refreshMessages().then(function(){ renderMessages(); toast('留言已删除'); }); }
+            else{ toast('删除失败：' + ((res && res.error) || '未知错误'), true); }
+          }).catch(function(err){ toast('删除失败：' + err, true); });
+      }else{
+        arr.splice(parseInt(idx, 10), 1);
+        saveMessages(arr);
+        renderMessages();
+        toast('留言已删除');
+      }
+    }
+    return;
+  }
+  if(a === 'clearmsg'){
+    if(confirm('确定清空全部留言？此操作不可撤销。')){
+      if(API.mode){
+        fetch('/api/message?all=1', {method:'DELETE', headers:apiHeaders()})
+          .then(function(r){ return r.json(); })
+          .then(function(res){
+            if(res && res.ok){ API.messages = []; renderMessages(); toast('已清空全部留言'); }
+            else{ toast('清空失败：' + ((res && res.error) || '未知错误'), true); }
+          }).catch(function(err){ toast('清空失败：' + err, true); });
+      }else{
+        saveMessages([]);
+        renderMessages();
+        toast('已清空全部留言');
+      }
+    }
+    return;
+  }
+});
+function findSection(){
+  var keys = ['config','services','cases','steps','team','quotes','backup'];
+  for(var i=0;i<keys.length;i++){ if(cur === keys[i]) return cur; }
+  return 'services';
+}
+document.getElementById('btn-export').addEventListener('click', exportData);
+document.getElementById('btn-import').addEventListener('click', function(){ document.getElementById('import-file').click(); });
+document.getElementById('btn-backup').addEventListener('click', function(e){ e.preventDefault(); exportData(); });
+document.getElementById('import-file').addEventListener('change', function(e){
+  var f = e.target.files[0];
+  if(!f) return;
+  var r = new FileReader();
+  r.onload = function(){
+    try{
+      var d = JSON.parse(r.result);
+      if(!d || typeof d !== 'object') throw new Error('bad');
+      var out = {};
+      out.config = Object.assign({}, DEFAULT_DATA.config, d.config || {});
+      ['services','cases','steps','team','quotes','hosts'].forEach(function(k){
+        out[k] = Array.isArray(d[k]) ? d[k] : DEFAULT_DATA[k];
+      });
+      if(!d._v || d._v < 2){ out.hosts = DEFAULT_DATA.hosts; }
+      if(!d._v || d._v < 3){
+        var t2 = (out.team || []).map(function(m){ return JSON.parse(JSON.stringify(m)); });
+        for(var i2=0;i2<t2.length;i2++){
+          if(t2[i2].name === '老染'){ t2[i2] = JSON.parse(JSON.stringify(DEFAULT_DATA.team[0])); break; }
+        }
+        out.team = t2;
+      }
+      SITE = out;
+      save(); render();
+      toast('导入成功');
+    }catch(err){ toast('导入失败：文件格式不正确', true); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+});
+/* ================= 本地上传：复制文件进 assets/ ================= */
+var FS_DB = 'rangang_fs_v1', FS_STORE = 'handles';
+function fsOpenDb(){
+  return new Promise(function(res, rej){
+    var r = indexedDB.open(FS_DB, 1);
+    r.onupgradeneeded = function(){ if(!r.result.objectStoreNames.contains(FS_STORE)) r.result.createObjectStore(FS_STORE); };
+    r.onsuccess = function(){ res(r.result); };
+    r.onerror = function(){ rej(r.error); };
+  });
+}
+function fsGet(key){
+  return fsOpenDb().then(function(db){
+    return new Promise(function(res){
+      var q = db.transaction(FS_STORE, 'readonly').objectStore(FS_STORE).get(key);
+      q.onsuccess = function(){ res(q.result || null); };
+      q.onerror = function(){ res(null); };
+    });
+  }).catch(function(){ return null; });
+}
+function fsSet(key, val){
+  return fsOpenDb().then(function(db){
+    return new Promise(function(res){
+      var q = db.transaction(FS_STORE, 'readwrite').objectStore(FS_STORE).put(val, key);
+      q.onsuccess = function(){ res(true); };
+      q.onerror = function(){ res(false); };
+    });
+  }).catch(function(){ return false; });
+}
+async function fsPickRoot(){
+  var h = await window.showDirectoryPicker({ id:'rangang-root', mode:'readwrite', startIn:'documents' });
+  await fsSet('root', h);
+  return h;
+}
+async function fsRoot(){
+  var h = await fsGet('root');
+  if(!h) h = await fsPickRoot();
+  return h;
+}
+async function fsEnsurePerm(h){
+  if(!h || typeof h.queryPermission !== 'function') return false;
+  var st = await h.queryPermission({mode:'readwrite'});
+  if(st !== 'granted') st = await h.requestPermission({mode:'readwrite'});
+  return st === 'granted';
+}
+async function fsExists(dir, name){
+  try{ await dir.getFileHandle(name); return true; }catch(e){ return false; }
+}
+function fsSafeName(name){
+  return String(name || 'file').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, '_').replace(/\s+/g, '-');
+}
+async function fsCopyToAssets(file){
+  var root = await fsRoot();
+  if(!await fsEnsurePerm(root)) throw new Error('目录写入权限被拒绝，请点一次「上传」重新选择官网文件夹');
+  var assets = (root.name === 'assets') ? root : await root.getDirectoryHandle('assets', {create:true});
+  var name = fsSafeName(file.name);
+  if(await fsExists(assets, name)){
+    var dot = name.lastIndexOf('.');
+    var base = dot > 0 ? name.slice(0, dot) : name;
+    var ext = dot > 0 ? name.slice(dot) : '';
+    name = base + '-' + Date.now().toString().slice(-6) + ext;
+  }
+  var fh = await assets.getFileHandle(name, {create:true});
+  var w = await fh.createWritable();
+  await w.write(file);
+  await w.close();
+  return 'assets/' + name;
+}
+function fsPreview(field, path, kind){
+  var old = field.querySelector('.media-prev');
+  if(old) old.remove();
+  var box = document.createElement('div');
+  box.className = 'media-prev';
+  if(kind === 'video'){
+    var v = document.createElement('video');
+    v.src = path; v.muted = true; v.controls = true; v.preload = 'metadata'; v.playsInline = true;
+    box.appendChild(v);
+  }else{
+    var i = document.createElement('img');
+    i.src = path; i.alt = '预览';
+    box.appendChild(i);
+  }
+  var tip = field.querySelector('.media-tip');
+  if(tip) field.insertBefore(box, tip); else field.appendChild(box);
+}
+async function fsUpload(btn){
+  var kind = btn.getAttribute('data-upload') || 'img';
+  var field = btn.closest('.field');
+  var input = field ? field.querySelector('input[data-k]') : null;
+  if(!window.showDirectoryPicker || !window.showOpenFilePicker){
+    toast('当前浏览器不支持直接上传，请手动填写 assets/ 路径', true);
+    return;
+  }
+  var label = btn.textContent;
+  try{
+    var types = kind === 'video'
+      ? [{description:'视频', accept:{'video/*':['.mp4','.mov','.m4v','.webm']}}]
+      : [{description:'图片', accept:{'image/*':['.png','.jpg','.jpeg','.webp']}}];
+    var picked = await window.showOpenFilePicker({types:types, multiple:false, id:'rangang-media'});
+    var file = await picked[0].getFile();
+    btn.disabled = true;
+    btn.textContent = '写入中…';
+    var path = '';
+    if(API.mode){
+      var fd = new FormData();
+      fd.append('file', file, file.name);
+      var resp = await fetch('/api/upload', { method:'POST', headers: apiHeaders(), body: fd });
+      var jr = await resp.json().catch(function(){ return {}; });
+      if(!jr.ok){
+        throw new Error(jr.error === 'unauthorized' ? '管理密码不正确'
+          : jr.error === 'r2_not_bound' ? '站点还没绑定 R2 存储桶，先手动填路径'
+          : jr.error === 'too_large' ? '文件超过 60MB，先压缩再传'
+          : ('上传失败：' + (jr.error || '未知错误')));
+      }
+      path = jr.path;
+    }else{
+      path = await fsCopyToAssets(file);
+    }
+    if(input) input.value = path;
+    fsPreview(field, path, kind);
+    toast('已复制到 ' + path);
+  }catch(err){
+    if(err && err.name === 'AbortError') return;
+    toast('上传失败：' + (err && err.message ? err.message : err), true);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+}
+document.addEventListener('click', function(e){
+  var btn = e.target && e.target.closest ? e.target.closest('[data-upload]') : null;
+  if(btn){ e.preventDefault(); fsUpload(btn); }
+});
+/* ================= 启动 ================= */
+(function detectApi(){
+  if(!window.fetch) return;
+  fetch('/api/site', { headers:{ 'accept':'application/json' } })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(res){
+      if(!res || !res.ok) return;
+      API.mode = true;
+      API.updatedAt = res.updatedAt || null;
+      if(res.data && typeof res.data === 'object'){
+        var merged = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        Object.keys(res.data).forEach(function(k){ if(k !== '_v') merged[k] = res.data[k]; });
+        SITE = merged;
+      }
+      modeBadge();
+      render();
+      refreshMessages().then(function(){
+        if(cur === 'messages' || cur === 'dashboard') render();
+      });
+      toast('已连接 D1 云端内容');
+    })
+    .catch(function(){ modeBadge(); });
+})();
+route();
+render();
+</script>
+</body>
+</html>

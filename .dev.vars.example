@@ -1,0 +1,2 @@
+# 本地开发用（不要提交到 GitHub，已在 .gitignore 排除）
+ADMIN_TOKEN=dev-token-please-change

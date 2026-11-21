@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="染缸传媒 RANGANG MEDIA —— 夜店声光电与品牌一站式解决方案。视觉显影、声光通电、品牌注入、情绪催化，入此染缸，皆为狂热。">
+<title>染缸传媒 RANGANG MEDIA | 夜店声光电及品牌一站式解决方案 V2</title>
+<style>
+/* ================= 基础与变量 ================= */
+:root{
+  --bg:#060607;
+  --bg2:#0b0b0e;
+  --ink:#f2f2f2;
+  --muted:#8a8a92;
+  --line:#1e1e24;
+  --purple:#8a2be2;
+  --green:#00ff88;
+  --blue:#00c8ff;
+  --pink:#ff2e63;
+  --orange:#ff7a00;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:"Helvetica Neue",Helvetica,"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+  overflow-x:hidden;cursor:none;
+}
+::selection{background:var(--purple);color:#fff;}
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:#0a0a0a;}
+::-webkit-scrollbar-thumb{background:#333;}
+a{color:inherit;text-decoration:none;}
+img{display:block;max-width:100%;}
+button{font-family:inherit;}
+/* ================= 自定义光标 ================= */
+#cursor{
+  position:fixed;top:0;left:0;width:14px;height:14px;border:1px solid #fff;border-radius:50%;
+  pointer-events:none;z-index:9999;transform:translate(-50%,-50%);
+  mix-blend-mode:difference;transition:width .25s,height .25s,background .25s,border-color .25s;
+}
+#cursor-dot{
+  position:fixed;top:0;left:0;width:4px;height:4px;background:#fff;border-radius:50%;
+  pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference;
+}
+#cursor.hovered{width:58px;height:58px;background:rgba(255,255,255,.12);border-color:transparent;}
+#cursor.drag{width:80px;height:80px;background:rgba(0,255,136,.15);border-color:var(--green);}
+/* ================= 染色画布 ================= */
+#dye-canvas{position:fixed;inset:0;pointer-events:none;z-index:1;filter:blur(90px);opacity:.7;}
+.dye-blob{position:absolute;border-radius:50%;transform:translate(-50%,-50%);animation:dyeFade 2.2s forwards;}
+@keyframes dyeFade{
+  0%{opacity:.9;transform:translate(-50%,-50%) scale(.6);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.8);}
+}
+/* ================= 加载页 ================= */
+#loader{
+  position:fixed;inset:0;background:#000;z-index:10000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
+  transition:opacity .8s ease,visibility .8s;
+}
+#loader.done{opacity:0;visibility:hidden;}
+.ring{
+  width:110px;height:110px;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,#000 0deg 12deg,#fff 12deg 24deg);
+  -webkit-mask-image:radial-gradient(circle at center,transparent 32%,#000 33%);
+  mask-image:radial-gradient(circle at center,transparent 32%,#000 33%);
+  animation:spin 2.2s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+#load-pct{font-size:.85rem;letter-spacing:6px;color:#777;}
+#load-tip{font-size:.7rem;letter-spacing:3px;color:#3d3d44;}
+/* ================= 导航 ================= */
+nav{
+  position:fixed;top:0;left:0;width:100%;z-index:500;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:20px 5vw;mix-blend-mode:difference;
+}
+.brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:2px;}
+.mini-logo{
+  width:34px;height:34px;object-fit:contain;
+  filter:invert(1) drop-shadow(0 0 6px rgba(255,255,255,.35));
+}
+.menu{display:flex;gap:30px;}
+.menu a{font-size:.8rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;position:relative;}
+.menu a::after{content:"";position:absolute;left:0;bottom:-6px;width:0;height:2px;background:#fff;transition:width .3s;}
+.menu a:hover::after{width:100%;}
+.nav-right{display:flex;align-items:center;gap:16px;}
+.sound-toggle{
+  width:40px;height:40px;border:1px solid #fff;border-radius:50%;background:transparent;
+  display:flex;align-items:center;justify-content:center;gap:2px;transition:.3s;cursor:none;
+}
+.sound-toggle:hover{background:#fff;}
+.sound-toggle:hover i{background:#000;}
+.sound-toggle i{width:3px;height:10px;background:#fff;display:block;transition:.3s;}
+.sound-toggle.on i{animation:bar .6s ease-in-out infinite alternate;}
+.sound-toggle.on i:nth-child(2){animation-delay:.15s;}
+.sound-toggle.on i:nth-child(3){animation-delay:.3s;}
+@keyframes bar{from{height:5px;}to{height:18px;}}
+.nav-cta{border:1px solid #fff;padding:10px 22px;border-radius:999px;font-size:.78rem;font-weight:800;letter-spacing:2px;transition:.3s;}
+.nav-cta:hover{background:#fff;color:#000;}
+/* ================= HERO ================= */
+.hero{
+  min-height:100vh;position:relative;z-index:10;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:120px 5vw 90px;overflow:hidden;
+}
+.hero-logo{
+  position:relative;width:220px;height:220px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:34px;
+  filter:drop-shadow(0 0 46px rgba(138,43,226,.4));
+}
+.hero-logo::before{
+  content:"";position:absolute;inset:-32px;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,#050505 0deg 11deg,#3a3a40 11deg 22deg);
+  -webkit-mask-image:radial-gradient(circle at center,transparent 30%,#000 31%);
+  mask-image:radial-gradient(circle at center,transparent 30%,#000 31%);
+  animation:spin 16s linear infinite;opacity:.55;
+}
+.hero-logo img{
+  width:200px;height:200px;object-fit:contain;
+  filter:invert(1) drop-shadow(0 0 26px rgba(0,255,136,.18));
+}
+.hero h1{font-size:clamp(3rem,9vw,8.5rem);font-weight:900;line-height:.92;letter-spacing:-3px;text-transform:uppercase;}
+.glitch{position:relative;display:inline-block;}
+.glitch::before,.glitch::after{content:attr(data-text);position:absolute;left:0;top:0;width:100%;}
+.glitch::before{color:var(--pink);animation:gl1 3s infinite steps(2);clip-path:inset(0 0 60% 0);}
+.glitch::after{color:var(--blue);animation:gl2 2.7s infinite steps(2);clip-path:inset(60% 0 0 0);}
+@keyframes gl1{0%,92%{transform:translate(0,0);opacity:0;}94%{transform:translate(-4px,-2px);opacity:.8;}98%{transform:translate(3px,1px);opacity:.6;}100%{opacity:0;}}
+@keyframes gl2{0%,90%{transform:translate(0,0);opacity:0;}93%{transform:translate(4px,2px);opacity:.8;}97%{transform:translate(-3px,-1px);opacity:.6;}100%{opacity:0;}}
+.hero .sub{margin-top:24px;color:var(--muted);letter-spacing:8px;font-size:clamp(.8rem,1.4vw,1.05rem);text-transform:uppercase;}
+.hero .tags{margin-top:38px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;}
+.tag{border:1px solid #2c2c31;padding:8px 18px;border-radius:999px;font-size:.75rem;letter-spacing:2px;color:#bbb;transition:.3s;}
+.tag:hover{border-color:var(--green);color:var(--green);}
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);font-size:.7rem;letter-spacing:4px;color:#666;animation:bob 2s infinite;}
+@keyframes bob{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,-10px);}}
+.hud{position:absolute;font-size:.68rem;letter-spacing:2px;color:#4a4a4a;line-height:1.8;}
+.hud.tl{top:110px;left:5vw;text-align:left;}
+.hud.br{bottom:110px;right:5vw;text-align:right;}
+/* ================= 跑马灯 ================= */
+.marquee{position:relative;z-index:10;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:22px 0;background:rgba(255,255,255,.02);}
+.marquee-track{display:flex;gap:60px;width:max-content;animation:mq 26s linear infinite;}
+.marquee span{font-size:1.4rem;font-weight:900;letter-spacing:4px;color:#3a3a3f;text-transform:uppercase;white-space:nowrap;}
+.marquee span b{color:var(--purple);}
+@keyframes mq{to{transform:translateX(-50%);}}
+/* ================= 通用 Section ================= */
+section{position:relative;z-index:10;padding:130px 5vw;}
+.sec-head{display:flex;align-items:baseline;gap:24px;margin-bottom:64px;flex-wrap:wrap;}
+.sec-index{font-size:.85rem;letter-spacing:4px;color:var(--green);}
+.sec-title{font-size:clamp(2.4rem,6vw,5rem);font-weight:900;text-transform:uppercase;letter-spacing:-1px;color:transparent;-webkit-text-stroke:1px #fff;line-height:1;}
+.sec-note{color:var(--muted);font-size:.9rem;letter-spacing:2px;max-width:440px;}
+/* 滚动揭示 */
+.reveal{opacity:0;transform:translateY(46px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1);}
+.reveal.in{opacity:1;transform:translateY(0);}
+/* ================= 服务 ================= */
+.srv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:26px;}
+.srv-card{position:relative;border:1px solid var(--line);background:rgba(255,255,255,.02);padding:44px 34px;overflow:hidden;transition:transform .5s cubic-bezier(.16,1,.3,1),border-color .4s;}
+.srv-card:hover{transform:translateY(-10px);border-color:#4a4a52;}
+.srv-card::before{
+  content:"";position:absolute;left:var(--mx,50%);top:var(--my,50%);width:340px;height:340px;border-radius:50%;
+  background:radial-gradient(circle,var(--glow,rgba(138,43,226,.35)) 0%,transparent 70%);
+  transform:translate(-50%,-50%);opacity:0;transition:opacity .35s;pointer-events:none;
+}
+.srv-card:hover::before{opacity:1;}
+.srv-num{font-size:.75rem;letter-spacing:3px;color:#5c5c66;}
+.srv-en{font-size:.66rem;letter-spacing:3px;color:#5c5c66;margin:-8px 0 12px;text-transform:uppercase;}
+.srv-card h3{font-size:1.7rem;font-weight:900;margin:18px 0 14px;}
+.srv-card p{color:#9a9aa2;font-size:.92rem;line-height:1.8;}
+.srv-list{margin-top:22px;display:flex;flex-wrap:wrap;gap:8px;}
+.srv-list i{font-style:normal;font-size:.7rem;letter-spacing:1px;color:#c9c9cf;border:1px solid #2e2e34;border-radius:999px;padding:5px 12px;}
+/* ================= 案例（横向拖拽） ================= */
+.works-rail-wrap{position:relative;}
+.works-rail{
+  display:flex;gap:34px;overflow-x:auto;padding:10px 4px 30px;
+  scrollbar-width:none;cursor:grab;
+}
+.works-rail::-webkit-scrollbar{display:none;}
+.works-rail.dragging{cursor:grabbing;}
+.work-card{flex:0 0 min(520px,82vw);border:1px solid var(--line);background:#0c0c10;position:relative;overflow:hidden;}
+.work-media{position:relative;height:340px;overflow:hidden;background:#101014;}
+.work-media img{width:100%;height:100%;object-fit:cover;filter:grayscale(100%) contrast(1.1);transition:filter .6s,transform .8s cubic-bezier(.16,1,.3,1);}
+.work-card:hover .work-media img{filter:grayscale(0%) contrast(1.05);transform:scale(1.06);}
+.work-media .badge{position:absolute;top:16px;left:16px;background:rgba(0,0,0,.6);border:1px solid #333;padding:6px 14px;font-size:.68rem;letter-spacing:2px;color:var(--green);backdrop-filter:blur(6px);}
+.work-media video{width:100%;height:100%;object-fit:cover;background:#000;filter:grayscale(55%) contrast(1.05);transition:filter .6s,transform .8s cubic-bezier(.16,1,.3,1);}
+.work-card:hover .work-media video{filter:grayscale(0%) contrast(1.05);transform:scale(1.04);}
+.work-media .badge.live{background:var(--green);border-color:var(--green);color:#04120a;}
+.work-media .play-pin{position:absolute;right:16px;bottom:16px;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(0,255,136,.14);border:1px solid rgba(0,255,136,.55);color:var(--green);backdrop-filter:blur(6px);transition:background .35s,color .35s,transform .35s;pointer-events:none;}
+.work-media .play-pin svg{width:17px;height:17px;}
+.work-card:hover .play-pin{background:rgba(0,255,136,.92);color:#04120a;transform:scale(1.08);}
+/* 案例视频弹窗 */
+#videobox{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;padding:4vw;background:rgba(0,0,0,.9);backdrop-filter:blur(8px);cursor:auto;}
+#videobox.open{display:flex;}
+#videobox .vb-inner{width:min(1100px,94vw);}
+#videobox video{width:100%;max-height:76vh;background:#000;border:1px solid #2a2a33;box-shadow:0 30px 90px rgba(0,0,0,.65);}
+#videobox .vb-cap{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:.74rem;letter-spacing:2px;color:#8a8a92;}
+#videobox .vb-cap b{color:#fff;font-weight:700;letter-spacing:1px;}
+#videobox .vb-close{position:absolute;top:22px;right:30px;background:none;border:0;color:#fff;font-size:1.7rem;line-height:1;opacity:.75;transition:opacity .3s;}
+#videobox .vb-close:hover{opacity:1;}
+@media (max-width:640px){#videobox{padding:12px;}#videobox video{max-height:60vh;}}
+.work-body{padding:30px 28px 34px;}
+.work-body .kicker{color:var(--blue);font-size:.74rem;letter-spacing:3px;font-weight:700;}
+.work-body h4{font-size:1.7rem;font-weight:900;margin:12px 0 12px;line-height:1.15;}
+.work-body p{color:#9a9aa2;font-size:.88rem;line-height:1.8;}
+.work-stats{display:flex;gap:26px;margin-top:20px;flex-wrap:wrap;}
+.work-stats b{display:block;font-size:1.35rem;font-weight:900;}
+.work-stats span{font-size:.66rem;letter-spacing:2px;color:#6b6b74;}
+.rail-hint{margin-top:6px;font-size:.7rem;letter-spacing:3px;color:#55555e;}
+.rail-progress{height:2px;background:#1c1c22;margin-top:18px;position:relative;}
+.rail-progress i{position:absolute;left:0;top:0;height:100%;width:12%;background:var(--green);transition:width .15s linear;}
+/* ================= 流程 ================= */
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));border:1px solid var(--line);}
+.flow-step{padding:44px 28px;border-right:1px solid var(--line);transition:background .4s;}
+.flow-step:last-child{border-right:none;}
+.flow-step:hover{background:rgba(138,43,226,.08);}
+.flow-step .n{font-size:2.6rem;font-weight:900;color:transparent;-webkit-text-stroke:1px #55555e;}
+.flow-step h5{margin:16px 0 10px;font-size:1.05rem;font-weight:800;letter-spacing:1px;}
+.flow-step p{color:#8b8b93;font-size:.84rem;line-height:1.7;}
+/* ================= 关于 ================= */
+.about-wrap{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center;}
+.about-text p{color:#a5a5ad;line-height:2;font-size:1rem;margin-bottom:20px;}
+.about-text p b{color:#fff;}
+.about-visual{position:relative;height:520px;border:1px solid var(--line);overflow:hidden;background:#0c0c0f;display:flex;align-items:center;justify-content:center;}
+.big-logo{
+  position:relative;width:300px;height:300px;
+  display:flex;align-items:center;justify-content:center;
+}
+.big-logo::before{
+  content:"";position:absolute;inset:-36px;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,#0a0a0a 0deg 10deg,#2e2e34 10deg 20deg);
+  -webkit-mask-image:radial-gradient(circle at center,transparent 30%,#000 31%);
+  mask-image:radial-gradient(circle at center,transparent 30%,#000 31%);
+  animation:spin 24s linear infinite;opacity:.6;
+}
+.big-logo img{width:280px;height:280px;object-fit:contain;filter:invert(1);}
+/* ================= 主理人 ================= */
+.hosts{margin-top:64px;padding-top:48px;border-top:1px solid var(--line);}
+.hosts-head{text-align:center;margin-bottom:36px;}
+.hosts-head b{font-size:.8rem;letter-spacing:6px;color:var(--green);text-transform:uppercase;}
+.hosts-head span{display:block;margin-top:8px;color:#6b6b74;font-size:.72rem;letter-spacing:3px;}
+.hosts-row{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;}
+.host-card{
+  flex:0 1 340px;display:flex;gap:20px;align-items:center;
+  border:1px solid var(--line);background:#0c0c10;padding:22px;transition:border-color .3s,transform .3s;
+}
+.host-card:hover{border-color:#4a4a52;transform:translateY(-4px);}
+.host-card .hv{width:92px;height:92px;flex:0 0 92px;border-radius:50%;overflow:hidden;border:1px solid #2e2e34;}
+.host-card .hv img{width:100%;height:100%;object-fit:cover;filter:grayscale(100%);transition:.5s;}
+.host-card:hover .hv img{filter:grayscale(0%);}
+.host-card h5{font-size:1.25rem;font-weight:900;letter-spacing:1px;}
+.host-card h5 b{font-weight:400;font-size:.72rem;color:#8b8b93;margin-left:6px;letter-spacing:1px;}
+.host-card .hr{display:block;margin:7px 0 9px;font-size:.7rem;letter-spacing:2px;color:var(--blue);}
+.host-card p{font-size:.84rem;color:#9a9aa2;line-height:1.75;}
+.eq{position:absolute;bottom:0;left:0;width:100%;display:flex;gap:4px;align-items:flex-end;height:90px;padding:0 20px;}
+.eq i{flex:1;background:linear-gradient(to top,var(--purple),var(--blue));animation:eq 1s ease-in-out infinite alternate;opacity:.8;}
+@keyframes eq{from{height:12%;}to{height:95%;}}
+/* ================= 团队 ================= */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:26px;}
+.member{border:1px solid var(--line);background:#0c0c10;overflow:hidden;position:relative;}
+.member .ph{height:300px;overflow:hidden;background:#111;}
+.member .ph img{width:100%;height:100%;object-fit:cover;object-position:center top;filter:grayscale(100%);transition:.6s;}
+.member:hover .ph img{filter:grayscale(0%);transform:scale(1.05);}
+.member .info{padding:22px 20px 26px;}
+.member .info b{display:block;font-size:1.15rem;font-weight:900;}
+.member .info span{display:block;margin-top:6px;font-size:.72rem;letter-spacing:2px;color:var(--green);}
+.member .info p{margin-top:12px;font-size:.8rem;color:#8b8b93;line-height:1.7;}
+.member .dye-tag{position:absolute;top:14px;right:14px;font-size:.62rem;letter-spacing:2px;padding:5px 10px;border:1px solid #333;background:rgba(0,0,0,.55);color:#bbb;}
+/* ================= 语录轮播 ================= */
+.quotes{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg2);}
+.quote-box{max-width:900px;margin:0 auto;text-align:center;position:relative;min-height:220px;}
+.quote-item{position:absolute;inset:0;opacity:0;transform:translateY(20px);transition:opacity .7s,transform .7s;pointer-events:none;}
+.quote-item.active{opacity:1;transform:translateY(0);pointer-events:auto;}
+.quote-item p{font-size:clamp(1.2rem,2.6vw,2rem);font-weight:800;line-height:1.6;}
+.quote-item span{display:block;margin-top:22px;color:var(--muted);font-size:.8rem;letter-spacing:3px;}
+.quote-dots{display:flex;gap:10px;justify-content:center;margin-top:34px;}
+.quote-dots button{width:10px;height:10px;border-radius:50%;border:1px solid #555;background:transparent;cursor:none;transition:.3s;padding:0;}
+.quote-dots button.on{background:var(--green);border-color:var(--green);transform:scale(1.3);}
+/* ================= CTA / 页脚 ================= */
+.cta{text-align:center;border-top:1px solid var(--line);background:radial-gradient(ellipse at 50% 120%,rgba(138,43,226,.22),transparent 60%);}
+.cta h2{
+  font-size:clamp(3.4rem,11vw,10rem);font-weight:900;line-height:.85;letter-spacing:-4px;text-transform:uppercase;
+  background:linear-gradient(180deg,#fff 20%,#4c4c55 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.cta p{margin:30px 0 44px;color:#9a9aa2;letter-spacing:3px;}
+.btn-jump{cursor:none;border:none;background:#fff;color:#000;font-weight:900;letter-spacing:3px;padding:20px 56px;border-radius:999px;font-size:1rem;text-transform:uppercase;transition:.3s;}
+.btn-jump:hover{transform:scale(1.06);box-shadow:0 0 46px rgba(255,255,255,.45);}
+.foot-bar{position:relative;z-index:10;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:26px 5vw;border-top:1px solid var(--line);color:#5c5c66;font-size:.75rem;letter-spacing:2px;}
+/* ================= 弹窗 ================= */
+#modal{position:fixed;inset:0;z-index:9000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.78);backdrop-filter:blur(10px);padding:20px;}
+#modal.open{display:flex;}
+.modal-box{width:min(560px,100%);background:#0d0d10;border:1px solid #2a2a30;padding:44px 40px;position:relative;animation:pop .4s cubic-bezier(.16,1,.3,1);max-height:90vh;overflow-y:auto;}
+@keyframes pop{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-box h3{font-size:1.6rem;font-weight:900;margin-bottom:8px;}
+.m-sub{color:#8b8b93;font-size:.85rem;margin-bottom:28px;letter-spacing:1px;}
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:.72rem;letter-spacing:2px;color:#7c7c86;margin-bottom:8px;}
+.field input,.field select,.field textarea{width:100%;background:#131317;border:1px solid #2a2a30;color:#eee;padding:13px 14px;font-size:.9rem;outline:none;transition:border .3s;font-family:inherit;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--purple);}
+.field textarea{resize:vertical;min-height:90px;}
+.modal-actions{display:flex;gap:14px;margin-top:26px;}
+.modal-actions button{cursor:none;flex:1;padding:15px;border-radius:999px;font-weight:800;letter-spacing:2px;font-size:.85rem;transition:.3s;}
+#m-submit{border:none;background:#fff;color:#000;}
+#m-submit:hover{background:var(--green);}
+#m-close{border:1px solid #3a3a42;background:transparent;color:#bbb;}
+#m-close:hover{border-color:#fff;color:#fff;}
+#m-ok{display:none;margin-top:18px;color:var(--green);font-size:.85rem;letter-spacing:1px;}
+/* ================= 响应式 ================= */
+@media(max-width:900px){
+  .menu{display:none;}
+  .about-wrap{grid-template-columns:1fr;}
+  .flow-step{border-right:none;border-bottom:1px solid var(--line);}
+  body{cursor:auto;}
+  #cursor,#cursor-dot{display:none;}
+  .hud{display:none;}
+}
+</style>
+</head>
+<body>
+<!-- 加载页 -->
+<div id="loader">
+  <div class="ring"></div>
+  <div id="load-pct">RENDERING 0%</div>
+  <div id="load-tip">入此染缸 · 皆为狂热</div>
+</div>
+<!-- 光标 -->
+<div id="cursor"></div>
+<div id="cursor-dot"></div>
+<!-- 染色层 -->
+<div id="dye-canvas"></div>
+<!-- 导航 -->
+<nav>
+  <div class="brand hoverable"><img class="mini-logo" src="assets/logo.png" alt="染缸传媒">染缸 RANGANG</div>
+  <div class="menu">
+    <a href="#formula" class="hoverable">配方 / Services</a>
+    <a href="#infections" class="hoverable">战绩 / Works</a>
+    <a href="#process" class="hoverable">流程 / Process</a>
+    <a href="#alchemy" class="hoverable">主理 / About</a>
+    <a href="#crew" class="hoverable">团队 / Crew</a>
+  </div>
+  <div class="nav-right">
+    <button class="sound-toggle hoverable" id="sound-toggle" title="环境音开关">
+      <i></i><i></i><i></i>
+    </button>
+    <a href="#jumpin" class="nav-cta hoverable">入缸 / Contact</a>
+  </div>
+</nav>
+<!-- HERO -->
+<header class="hero">
+  <div class="hud tl">[SYSTEM: ONLINE]<br>[BPM: 128]<br>[VAT: FULL]</div>
+  <div class="hud br">RANGANG MEDIA ©2026<br>NIGHT ECONOMY SPECIALISTS</div>
+  <div class="hero-logo" id="hero-logo"><img src="assets/logo.png" alt="染缸传媒 RANGANG MEDIA"></div>
+  <h1><span class="glitch" data-text="WELCOME">WELCOME</span><br>TO THE <span class="glitch" data-text="VAT">VAT</span></h1>
+  <div class="sub">染缸传媒 · 重塑感官 · 渲染夜色</div>
+  <div class="tags">
+    <span class="tag hoverable">平面设计</span>
+    <span class="tag hoverable">动态视觉 / VJ</span>
+    <span class="tag hoverable">声光电一站式</span>
+    <span class="tag hoverable">夜店品牌管理</span>
+    <span class="tag hoverable">创意派对策划</span>
+  </div>
+  <div class="scroll-hint">SCROLL TO EXPLORE ↓</div>
+</header>
+<!-- 跑马灯 -->
+<div class="marquee">
+  <div class="marquee-track" id="mq-track">
+    <span>CLUB BRANDING <b>✦</b></span><span>视觉显影 <b>✦</b></span><span>LASER &amp; LIGHT <b>✦</b></span>
+    <span>声光通电 <b>✦</b></span><span>VJ MOTION <b>✦</b></span><span>品牌注入 <b>✦</b></span>
+    <span>RAVE CATALYST <b>✦</b></span><span>情绪催化 <b>✦</b></span>
+  </div>
+</div>
+<!-- 服务 -->
+<section id="formula">
+  <div class="sec-head reveal">
+    <span class="sec-index">[ 01 ]</span>
+    <h2 class="sec-title">The Formula</h2>
+    <p class="sec-note">我们如何调制一场完美的夜？四剂配方，缺一不可。</p>
+  </div>
+  <div class="srv-grid">
+    <div class="srv-card hoverable reveal" style="--glow:rgba(138,43,226,.4);">
+      <span class="srv-num">FORMULA / 01</span>
+      <h3>视觉显影</h3>
+      <p>平面与动态的双线输出。我们用像素与光斑，构建狂欢的幻觉。</p>
+      <div class="srv-list"><i>主视觉KV</i><i>夜店VI</i><i>VJ素材</i><i>裸眼3D</i><i>宣传片</i></div>
+    </div>
+    <div class="srv-card hoverable reveal" style="--glow:rgba(0,200,255,.35);">
+      <span class="srv-num">FORMULA / 02</span>
+      <h3>声光通电</h3>
+      <p>懂设计的工程，懂工程的艺术。空间、灯光、音响、机械一站统筹。</p>
+      <div class="srv-list"><i>空间视觉规划</i><i>灯光编程</i><i>音响顾问</i><i>舞台特效</i></div>
+    </div>
+    <div class="srv-card hoverable reveal" style="--glow:rgba(0,255,136,.3);">
+      <span class="srv-num">FORMULA / 03</span>
+      <h3>品牌注入</h3>
+      <p>从0到1孵化夜店品牌，或为老场子重塑灵魂，操盘全域传播。</p>
+      <div class="srv-list"><i>品牌全案</i><i>升级重塑</i><i>自媒体代运营</i><i>公关传播</i></div>
+    </div>
+    <div class="srv-card hoverable reveal" style="--glow:rgba(255,46,99,.35);">
+      <span class="srv-num">FORMULA / 04</span>
+      <h3>情绪催化</h3>
+      <p>主题派对IP、艺人宣发、沉浸互动——制造让城市失眠的解药。</p>
+      <div class="srv-list"><i>派对IP</i><i>DJ宣发</i><i>演艺对接</i><i>沉浸玩法</i></div>
+    </div>
+  </div>
+</section>
+<!-- 案例（横向拖拽） -->
+<section id="infections">
+  <div class="sec-head reveal">
+    <span class="sec-index">[ 02 ]</span>
+    <h2 class="sec-title">Infections</h2>
+    <p class="sec-note">每一次交付，都是一场成功的病毒式感染。按住拖拽，浏览战绩。</p>
+  </div>
+  <div class="works-rail-wrap reveal">
+    <div class="works-rail" id="works-rail">
+      <div class="work-card hoverable">
+        <div class="work-media">
+          <img src="assets/case-1.png" alt="霓虹废土重启计划" loading="lazy">
+          <span class="badge">CASE / 001</span>
+        </div>
+        <div class="work-body">
+          <span class="kicker">CYBERPUNK CLUB · 2023 · 品牌全案 + 声光电</span>
+          <h4>霓虹废土 重启计划</h4>
+          <p>停业半年的老场子，90天完成VI重塑、光效重编程与开业派对IP，一场彻底的"感染"。</p>
+          <div class="work-stats">
+            <div><b>3000+</b><span>开业客流</span></div>
+            <div><b>500W</b><span>社媒曝光</span></div>
+            <div><b>90天</b><span>全案周期</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="work-card hoverable">
+        <div class="work-media">
+          <img src="assets/case-2.png" alt="深渊漩涡主题派对" loading="lazy">
+          <span class="badge">CASE / 002</span>
+        </div>
+        <div class="work-body">
+          <span class="kicker">TECHNO RAVE · 2024 · 派对企划 + 动态视觉</span>
+          <h4>深渊漩涡 主题派对</h4>
+          <p>以染缸漩涡为概念原点，定制VJ视觉与激光阵列编程，8小时沉浸式视听风暴。</p>
+          <div class="work-stats">
+            <div><b>3min</b><span>门票售罄</span></div>
+            <div><b>8h</b><span>沉浸时长</span></div>
+            <div><b>12组</b><span>艺人阵容</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="work-card hoverable">
+        <div class="work-media">
+          <img src="assets/case-3.png" alt="脉冲工厂光效重编程" loading="lazy">
+          <span class="badge">CASE / 003</span>
+        </div>
+        <div class="work-body">
+          <span class="kicker">MAINSTREAM CLUB · 2024 · 声光电一站式</span>
+          <h4>脉冲工厂 光效重编程</h4>
+          <p>不改一砖一瓦，仅凭灯光编程、音响调校与大屏视觉升级，体感温度提升一个量级。</p>
+          <div class="work-stats">
+            <div><b>2.1x</b><span>留客时长</span></div>
+            <div><b>0</b><span>硬装改动</span></div>
+            <div><b>45天</b><span>交付周期</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="work-card hoverable">
+        <div class="work-media">
+          <img src="assets/case-4.png" alt="午夜染坊品牌孵化" loading="lazy">
+          <span class="badge">CASE / 004</span>
+        </div>
+        <div class="work-body">
+          <span class="kicker">NEW BORN CLUB · 2024 · 品牌孵化 + 代运营</span>
+          <h4>午夜染坊 从0到1</h4>
+          <p>命名、VI、空间视觉、开业季宣发全链路操盘，首月即登同城热门榜TOP1。</p>
+          <div class="work-stats">
+            <div><b>TOP1</b><span>同城热门</span></div>
+            <div><b>60天</b><span>孵化周期</span></div>
+            <div><b>18W</b><span>首月曝光</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="rail-hint">← DRAG / 拖拽浏览 →</div>
+    <div class="rail-progress"><i id="rail-bar"></i></div>
+  </div>
+</section>
+<!-- 流程 -->
+<section id="process">
+  <div class="sec-head reveal">
+    <span class="sec-index">[ 03 ]</span>
+    <h2 class="sec-title">Process</h2>
+    <p class="sec-note">从第一次见面到全场沸腾，五步入缸。</p>
+  </div>
+  <div class="flow reveal">
+    <div class="flow-step hoverable"><div class="n">01</div><h5>诊断 / DIAGNOSE</h5><p>实地勘场、竞品扫描、客群画像，找出场子的"病根"。</p></div>
+    <div class="flow-step hoverable"><div class="n">02</div><h5>配方 / FORMULATE</h5><p>输出品牌概念、视觉方向与声光电预算方案。</p></div>
+    <div class="flow-step hoverable"><div class="n">03</div><h5>渲染 / RENDER</h5><p>平面、动态、空间三线并行，高频迭代直至饱和。</p></div>
+    <div class="flow-step hoverable"><div class="n">04</div><h5>注入 / INFUSE</h5><p>现场施工统筹、灯光编程、设备联调，一针入魂。</p></div>
+    <div class="flow-step hoverable"><div class="n">05</div><h5>引爆 / DETONATE</h5><p>开业/派对宣发操盘，数据复盘，持续陪跑。</p></div>
+  </div>
+</section>
+<!-- 关于 -->
+<section id="alchemy">
+  <div class="sec-head reveal">
+    <span class="sec-index">[ 04 ]</span>
+    <h2 class="sec-title">The Alchemists</h2>
+  </div>
+  <div class="about-wrap">
+    <div class="about-text reveal">
+      <p><b>我们是一群视觉极客，也是派对动物。</b></p>
+      <p>染缸传媒诞生于凌晨四点的控台前。我们把光影、声波、酒精与荷尔蒙倒进同一个容器，提炼出让城市失眠的解药。</p>
+      <p>区别于传统设计公司，我们<b>只深耕夜经济</b>：我们懂DJ的drop落在第几拍，懂舞池的人流在第几分钟到达峰值，懂一块LED屏在烟雾里的最佳亮度。</p>
+      <p>入此染缸，皆为狂热。</p>
+    </div>
+    <div class="about-visual hoverable reveal">
+      <div class="big-logo"><img src="assets/logo.png" alt="染缸传媒 RANGANG MEDIA"></div>
+      <div class="eq" id="eq"></div>
+    </div>
+  </div>
+  <div class="hosts" id="hosts"></div>
+</section>
+<!-- 团队 -->
+<section id="crew">
+  <div class="sec-head reveal">
+    <span class="sec-index">[ 05 ]</span>
+    <h2 class="sec-title">The Crew</h2>
+    <p class="sec-note">缸里的四位"调药师"。悬停为他们染色。</p>
+  </div>
+  <div class="team-grid">
+    <div class="member hoverable reveal">
+      <div class="ph"><img src="assets/team-1.png" alt="创始人/创意总监" loading="lazy"></div>
+      <span class="dye-tag">DYE-01</span>
+      <div class="info"><b>老染 / RAN</b><span>创始人 · 创意总监</span><p>前4A创意组长，十年夜文化观察者。坚信"没有不嗨的场子，只有不够狠的配方"。</p></div>
+    </div>
+    <div class="member hoverable reveal">
+      <div class="ph"><img src="assets/team-2.png" alt="视觉总监" loading="lazy"></div>
+      <span class="dye-tag">DYE-02</span>
+      <div class="info"><b>阿缸 / GANG</b><span>视觉总监 · VJ</span><p>酸性设计信徒，控台前的即兴演奏者。他的视觉永远比drop早半拍到位。</p></div>
+    </div>
+    <div class="member hoverable reveal">
+      <div class="ph"><img src="assets/team-3.png" alt="声光电工程总监" loading="lazy"></div>
+      <span class="dye-tag">DYE-03</span>
+      <div class="info"><b>伏特 / VOLT</b><span>声光电工程总监</span><p>灯光编程与音响系统双修。能把预算花在刀刃上，也能把刀刃做成激光。</p></div>
+    </div>
+    <div class="member hoverable reveal">
+      <div class="ph"><img src="assets/team-4.png" alt="品牌操盘手" loading="lazy"></div>
+      <span class="dye-tag">DYE-04</span>
+      <div class="info"><b>夜航 / NAVI</b><span>品牌操盘 · 宣发</span><p>社交平台流量猎手。经手的开业宣发，平均首周曝光破百万。</p></div>
+    </div>
+  </div>
+</section>
+<!-- 语录轮播 -->
+<section class="quotes">
+  <div class="quote-box" id="quote-box">
+    <div class="quote-item active">
+      <p>"把场子交给染缸之后，我们只需要担心一件事——门口排队太长。"</p>
+      <span>—— 某连锁夜店品牌 主理人 / MR. K</span>
+    </div>
+    <div class="quote-item">
+      <p>"他们不是乙方，是和你一起熬夜、一起听drop、一起为客流发愁的合伙人。"</p>
+      <span>—— NEON WASTELAND 投资人 / LISA</span>
+    </div>
+    <div class="quote-item">
+      <p>"第一次看到他们做的VJ素材，我就知道这场派对已经赢了一半。"</p>
+      <span>—— 国际百大DJ 巡演统筹 / AGENT 7</span>
+    </div>
+  </div>
+  <div class="quote-dots" id="quote-dots"></div>
+</section>
+<!-- CTA -->
+<section class="cta" id="jumpin">
+  <h2 class="reveal">JUMP<br>IN.</h2>
+  <p class="reveal">下一场爆满的派对，从这一次对话开始。</p>
+  <button class="btn-jump hoverable reveal" id="open-modal">开启合作 / START PROJECT</button>
+</section>
+<footer>
+  <div class="foot-bar">
+    <span>© 2026 染缸传媒 RANGANG MEDIA. ALL RIGHTS RESERVED.</span>
+    <span>HELLO@RANGANG.MEDIA / +86 138-0000-0000</span>
+    <span>[SYSTEM: ONLINE] / [BPM: 128] / [VAT: FULL]</span>
+  </div>
+</footer>
+<!-- 合作弹窗 -->
+<div id="modal">
+  <div class="modal-box">
+    <h3>入缸申请 / JUMP IN</h3>
+    <p class="m-sub">留下信息，24小时内会有主理人与你联系。</p>
+    <form id="contact-form">
+      <div class="field"><label>称呼 / NAME</label><input type="text" id="f-name" required placeholder="怎么称呼你？"></div>
+      <div class="field"><label>联系方式 / CONTACT</label><input type="text" id="f-contact" required placeholder="微信 / 电话"></div>
+      <div class="field"><label>需求类型 / SERVICE</label>
+        <select id="f-type">
+          <option>视觉显影（平面/动态）</option>
+          <option>声光通电（一站式工程）</option>
+          <option>品牌注入（全案/代运营）</option>
+          <option>情绪催化（派对企划）</option>
+          <option>我全都要</option>
+        </select>
+      </div>
+      <div class="field"><label>项目简述 / BRIEF</label><textarea id="f-brief" placeholder="场子在哪？多大？想解决什么问题？"></textarea></div>
+      <div class="modal-actions">
+        <button type="submit" id="m-submit">发送 / SEND</button>
+        <button type="button" id="m-close">关闭 / CLOSE</button>
+      </div>
+      <div id="m-ok">✓ 已收到你的入缸申请，保持手机畅通。</div>
+    </form>
+  </div>
+</div>
+<!-- 案例视频弹窗 -->
+<div id="videobox" aria-hidden="true">
+  <button class="vb-close" type="button" aria-label="关闭">✕</button>
+  <div class="vb-inner">
+    <video controls playsinline preload="metadata"></video>
+    <div class="vb-cap"><b class="vb-title"></b><span class="vb-meta"></span></div>
+  </div>
+</div>
+<script>
+/* ================= 数据层（模块化后台联动） ================= */
+var DATA_KEY = 'rangang_data_v1';
+var DEFAULT_DATA = {
+  _v: 3,
+  config: {
+    brand: '染缸 RANGANG',
+    slogan: '染缸传媒 · 重塑感官 · 渲染夜色',
+    tags: ['平面设计','动态视觉 / VJ','声光电一站式','夜店品牌管理','创意派对策划'],
+    email: 'HELLO@RANGANG.MEDIA',
+    phone: '+86 138-0000-0000',
+    copyright: '2026',
+    bpm: '128',
+    sys: 'ONLINE',
+    vat: 'FULL',
+    wx_enable: 'off',
+    wx_service: 'serverchan',
+    wx_key: '',
+    about_img: ''
+  },
+  hosts: [
+    {id:1, name:'陆岩峰', en:'LU YANFENG', role:'染缸传媒创始人', desc:'二十年品牌经营，策划大型夜店、音乐节，深耕艺人调度。', img:'assets/host-1.png'}
+  ],
+  services: [
+    {id:1, num:'FORMULA / 01', title:'视觉显影', en:'VISUAL DEVELOP', desc:'平面与动态的双线输出。我们用像素与光斑，构建狂欢的幻觉。', tags:['主视觉KV','夜店VI','VJ素材','裸眼3D','宣传片'], glow:'rgba(138,43,226,.4)'},
+    {id:2, num:'FORMULA / 02', title:'声光通电', en:'AV & LIGHT', desc:'懂设计的工程，懂工程的艺术。空间、灯光、音响、机械一站统筹。', tags:['空间视觉规划','灯光编程','音响顾问','舞台特效'], glow:'rgba(0,200,255,.35)'},
+    {id:3, num:'FORMULA / 03', title:'品牌注入', en:'BRAND INFUSE', desc:'从0到1孵化夜店品牌，或为老场子重塑灵魂，操盘全域传播。', tags:['品牌全案','升级重塑','自媒体代运营','公关传播'], glow:'rgba(0,255,136,.3)'},
+    {id:4, num:'FORMULA / 04', title:'情绪催化', en:'MOOD CATALYST', desc:'主题派对IP、艺人宣发、沉浸互动——制造让城市失眠的解药。', tags:['派对IP','DJ宣发','演艺对接','沉浸玩法'], glow:'rgba(255,46,99,.35)'}
+  ],
+  cases: [
+    {id:1, badge:'CASE / 001', kicker:'CYBERPUNK CLUB · 2023 · 品牌全案 + 声光电', title:'霓虹废土 重启计划', desc:'停业半年的老场子，90天完成VI重塑、光效重编程与开业派对IP，一场彻底的"感染"。', stats:[{v:'3000+',l:'开业客流'},{v:'500W',l:'社媒曝光'},{v:'90天',l:'全案周期'}], img:'assets/case-1.png', video:'assets/case-1.mp4'},
+    {id:2, badge:'CASE / 002', kicker:'TECHNO RAVE · 2024 · 派对企划 + 动态视觉', title:'深渊漩涡 主题派对', desc:'以染缸漩涡为概念原点，定制VJ视觉与激光阵列编程，8小时沉浸式视听风暴。', stats:[{v:'3min',l:'门票售罄'},{v:'8h',l:'沉浸时长'},{v:'12组',l:'艺人阵容'}], img:'assets/case-2.png', video:'assets/case-2.mp4'},
+    {id:3, badge:'CASE / 003', kicker:'MAINSTREAM CLUB · 2024 · 声光电一站式', title:'脉冲工厂 光效重编程', desc:'不改一砖一瓦，仅凭灯光编程、音响调校与大屏视觉升级，体感温度提升一个量级。', stats:[{v:'2.1x',l:'留客时长'},{v:'0',l:'硬装改动'},{v:'45天',l:'交付周期'}], img:'assets/case-3.png', video:'assets/case-3.mp4'},
+    {id:4, badge:'CASE / 004', kicker:'NEW BORN CLUB · 2024 · 品牌孵化 + 代运营', title:'午夜染坊 从0到1', desc:'命名、VI、空间视觉、开业季宣发全链路操盘，首月即登同城热门榜TOP1。', stats:[{v:'TOP1',l:'同城热门'},{v:'60天',l:'孵化周期'},{v:'18W',l:'首月曝光'}], img:'assets/case-4.png', video:'assets/case-4.mp4'}
+  ],
+  steps: [
+    {id:1, n:'01', title:'诊断', en:'DIAGNOSE', desc:'实地勘场、竞品扫描、客群画像，找出场子的"病根"。'},
+    {id:2, n:'02', title:'配方', en:'FORMULATE', desc:'输出品牌概念、视觉方向与声光电预算方案。'},
+    {id:3, n:'03', title:'渲染', en:'RENDER', desc:'平面、动态、空间三线并行，高频迭代直至饱和。'},
+    {id:4, n:'04', title:'注入', en:'INFUSE', desc:'现场施工统筹、灯光编程、设备联调，一针入魂。'},
+    {id:5, n:'05', title:'引爆', en:'DETONATE', desc:'开业/派对宣发操盘，数据复盘，持续陪跑。'}
+  ],
+  team: [
+    {id:1, dye:'DYE-01', name:'陆岩峰', en:'LU YANFENG', role:'染缸传媒创始人', desc:'二十年品牌经营，策划大型夜店、音乐节，深耕艺人调度。', img:'assets/host-1.png'},
+    {id:2, dye:'DYE-02', name:'阿缸', en:'GANG', role:'视觉总监 · VJ', desc:'酸性设计信徒，控台前的即兴演奏者。他的视觉永远比drop早半拍到位。', img:'assets/team-2.png'},
+    {id:3, dye:'DYE-03', name:'伏特', en:'VOLT', role:'声光电工程总监', desc:'灯光编程与音响系统双修。能把预算花在刀刃上，也能把刀刃做成激光。', img:'assets/team-3.png'},
+    {id:4, dye:'DYE-04', name:'夜航', en:'NAVI', role:'品牌操盘 · 宣发', desc:'社交平台流量猎手。经手的开业宣发，平均首周曝光破百万。', img:'assets/team-4.png'}
+  ],
+  quotes: [
+    {id:1, text:'"把场子交给染缸之后，我们只需要担心一件事——门口排队太长。"', by:'—— 某连锁夜店品牌 主理人 / MR. K'},
+    {id:2, text:'"他们不是乙方，是和你一起熬夜、一起听drop、一起为客流发愁的合伙人。"', by:'—— NEON WASTELAND 投资人 / LISA'},
+    {id:3, text:'"第一次看到他们做的VJ素材，我就知道这场派对已经赢了一半。"', by:'—— 国际百大DJ 巡演统筹 / AGENT 7'}
+  ]
+};
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function loadData(){
+  try{
+    var raw = localStorage.getItem(DATA_KEY);
+    if(raw){
+      var d = JSON.parse(raw);
+      var out = {};
+      out.config = Object.assign({}, DEFAULT_DATA.config, d.config || {});
+      ['services','cases','steps','team','quotes','hosts'].forEach(function(k){
+        out[k] = Array.isArray(d[k]) ? d[k] : DEFAULT_DATA[k];
+      });
+      if(!d._v || d._v < 2){ out.hosts = DEFAULT_DATA.hosts; }
+      // 旧数据没有视频字段时，沿用同 id 的默认视频，避免案例区退回纯图片
+      if(Array.isArray(out.cases) && !(d._v >= 4)){
+        out.cases = out.cases.map(function(c){
+          var base = (DEFAULT_DATA.cases || []).filter(function(x){ return x.id === c.id; })[0];
+          if(base && base.video && c.video !== 'none' && !String(c.video || '').trim()){
+            c = JSON.parse(JSON.stringify(c));
+            c.video = base.video;
+          }
+          return c;
+        });
+      }
+      if(!d._v || d._v < 3){
+        var t2 = (out.team || []).map(function(m){ return JSON.parse(JSON.stringify(m)); });
+        for(var i2=0;i2<t2.length;i2++){
+          if(t2[i2].name === '老染'){ t2[i2] = JSON.parse(JSON.stringify(DEFAULT_DATA.team[0])); break; }
+        }
+        out.team = t2;
+      }
+      return out;
+    }
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+var SITE = loadData();
+function renderSite(){
+  if(SITE.config.brand){
+    var br = document.querySelector('.brand');
+    if(br && br.lastChild) br.lastChild.textContent = ' ' + SITE.config.brand;
+  }
+  var sub = document.querySelector('.hero .sub');
+  if(sub && SITE.config.slogan) sub.textContent = SITE.config.slogan;
+  var tagsWrap = document.querySelector('.hero .tags');
+  if(tagsWrap && SITE.config.tags && SITE.config.tags.length){
+    tagsWrap.innerHTML = SITE.config.tags.map(function(t){ return '<span class="tag hoverable">' + esc(t) + '</span>'; }).join('');
+  }
+  var hudBr = document.querySelector('.hud.br');
+  if(hudBr) hudBr.innerHTML = 'RANGANG MEDIA ©' + esc(SITE.config.copyright || '') + '<br>NIGHT ECONOMY SPECIALISTS';
+  var hudTl = document.querySelector('.hud.tl');
+  if(hudTl) hudTl.innerHTML = '[SYSTEM: ' + esc(SITE.config.sys || 'ONLINE') + ']<br>[BPM: ' + esc(SITE.config.bpm || '128') + ']<br>[VAT: ' + esc(SITE.config.vat || 'FULL') + ']';
+  var foot = document.querySelector('.foot-bar');
+  if(foot){
+    var f1 = foot.querySelector('span:nth-child(1)');
+    var f2 = foot.querySelector('span:nth-child(2)');
+    if(f1) f1.textContent = '© ' + esc(SITE.config.copyright || '') + ' ' + esc(SITE.config.brand || '') + ' RANGANG MEDIA. ALL RIGHTS RESERVED.';
+    if(f2) f2.innerHTML = esc(SITE.config.email || '') + ' / ' + esc(SITE.config.phone || '');
+  }
+  var grid = document.querySelector('.srv-grid');
+  if(grid){
+    grid.innerHTML = SITE.services.map(function(s){
+      return '<div class="srv-card hoverable reveal" style="--glow:' + esc(s.glow || 'rgba(138,43,226,.4)') + ';">' +
+        '<span class="srv-num">' + esc(s.num) + '</span>' +
+        '<h3>' + esc(s.title) + '</h3>' +
+        (s.en ? '<div class="srv-en">' + esc(s.en) + '</div>' : '') +
+        '<p>' + esc(s.desc) + '</p>' +
+        '<div class="srv-list">' + (s.tags || []).map(function(t){ return '<i>' + esc(t) + '</i>'; }).join('') + '</div></div>';
+    }).join('');
+  }
+  var rail = document.getElementById('works-rail');
+  if(rail){
+    rail.innerHTML = SITE.cases.map(function(c){
+      var media = c.video
+        ? '<video class="work-video" src="' + esc(c.video) + '" poster="' + esc(c.img || '') + '" muted loop playsinline preload="metadata" aria-label="' + esc(c.title) + '"></video>' +
+          '<span class="play-pin" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>'
+        : '<img src="' + esc(c.img || '') + '" alt="' + esc(c.title) + '" loading="lazy">';
+      return '<div class="work-card hoverable" data-video="' + esc(c.video || '') + '" data-title="' + esc(c.title) + '" data-badge="' + esc(c.badge) + '"><div class="work-media">' +
+        media +
+        '<span class="badge' + (c.video ? ' live' : '') + '">' + esc(c.badge) + '</span></div>' +
+        '<div class="work-body"><span class="kicker">' + esc(c.kicker) + '</span>' +
+        '<h4>' + esc(c.title) + '</h4><p>' + esc(c.desc) + '</p>' +
+        '<div class="work-stats">' + (c.stats || []).map(function(st){
+          return '<div><b>' + esc(st.v) + '</b><span>' + esc(st.l) + '</span></div>';
+        }).join('') + '</div></div></div>';
+    }).join('');
+  }
+  var flow = document.querySelector('#process .flow');
+  if(flow){
+    flow.innerHTML = SITE.steps.map(function(s){
+      return '<div class="flow-step hoverable"><div class="n">' + esc(s.n) + '</div><h5>' + esc(s.title) + ' / ' + esc(s.en) + '</h5><p>' + esc(s.desc) + '</p></div>';
+    }).join('');
+  }
+  var tgrid = document.querySelector('.team-grid');
+  if(tgrid){
+    tgrid.innerHTML = SITE.team.map(function(m){
+      return '<div class="member hoverable reveal"><div class="ph"><img src="' + esc(m.img || '') + '" alt="' + esc(m.name) + '" loading="lazy"></div>' +
+        '<span class="dye-tag">' + esc(m.dye) + '</span>' +
+        '<div class="info"><b>' + esc(m.name) + ' / ' + esc(m.en) + '</b><span>' + esc(m.role) + '</span><p>' + esc(m.desc) + '</p></div></div>';
+    }).join('');
+  }
+  var blImg = document.querySelector('.big-logo img');
+  if(blImg) blImg.src = (SITE.config.about_img || 'assets/logo.png');
+  var hostsWrap = document.getElementById('hosts');
+  if(hostsWrap){
+    hostsWrap.innerHTML =
+      '<div class="hosts-head"><b>主理人 / HOST</b><span>缸里掌勺的人</span></div>' +
+      '<div class="hosts-row">' + SITE.hosts.map(function(h){
+        return '<div class="host-card hoverable"><div class="hv"><img src="' + esc(h.img || 'assets/team-1.png') + '" alt="' + esc(h.name) + '" loading="lazy"></div>' +
+          '<div><h5>' + esc(h.name) + '<b>' + esc(h.en || '') + '</b></h5>' +
+          '<span class="hr">' + esc(h.role || '') + '</span><p>' + esc(h.desc || '') + '</p></div></div>';
+      }).join('') + '</div>';
+  }
+  var qbox = document.getElementById('quote-box');
+  if(qbox){
+    qbox.innerHTML = SITE.quotes.map(function(q, i){
+      return '<div class="quote-item' + (i === 0 ? ' active' : '') + '"><p>' + esc(q.text) + '</p><span>' + esc(q.by) + '</span></div>';
+    }).join('');
+  }
+  var sel = document.getElementById('f-type');
+  if(sel){
+    var opts = SITE.services.map(function(s){ return s.title; }).concat(['我全都要']);
+    sel.innerHTML = opts.map(function(o){ return '<option>' + esc(o) + '</option>'; }).join('');
+  }
+}
+renderSite();
+/* ================= 线上数据（Cloudflare D1） ================= */
+(function syncFromApi(){
+  if(!window.fetch || !/^http/.test(location.protocol)) return;
+  fetch('/api/site', { headers:{ 'accept':'application/json' }, cache:'no-store' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(res){
+      if(!res || !res.ok || !res.data || typeof res.data !== 'object') return;
+      var merged = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      Object.keys(res.data).forEach(function(k){ if(k !== '_v') merged[k] = res.data[k]; });
+      SITE = merged;
+      renderSite();
+    })
+    .catch(function(){});
+})();
+/* ================= 加载页 ================= */
+(function(){
+  var pct = document.getElementById('load-pct');
+  var loader = document.getElementById('loader');
+  var p = 0;
+  var timer = setInterval(function(){
+    p += Math.random()*14 + 6;
+    if(p >= 100){
+      p = 100; clearInterval(timer);
+      setTimeout(function(){ loader.classList.add('done'); }, 350);
+    }
+    pct.textContent = 'RENDERING ' + Math.floor(p) + '%';
+  }, 110);
+})();
+/* ================= 光标 ================= */
+var cursor = document.getElementById('cursor');
+var dot = document.getElementById('cursor-dot');
+var cx=0, cy=0, tx=0, ty=0;
+document.addEventListener('mousemove', function(e){
+  tx = e.clientX; ty = e.clientY;
+  dot.style.left = tx + 'px'; dot.style.top = ty + 'px';
+  spawnDye(tx, ty);
+});
+(function loop(){
+  cx += (tx - cx) * 0.18; cy += (ty - cy) * 0.18;
+  cursor.style.left = cx + 'px'; cursor.style.top = cy + 'px';
+  requestAnimationFrame(loop);
+})();
+function bindHover(){
+  document.querySelectorAll('.hoverable, a, button').forEach(function(el){
+    if(el.dataset.hoverBound) return;
+    el.dataset.hoverBound = "1";
+    el.addEventListener('mouseenter', function(){ cursor.classList.add('hovered'); });
+    el.addEventListener('mouseleave', function(){ cursor.classList.remove('hovered'); });
+  });
+}
+bindHover();
+/* ================= 染色画布 ================= */
+var dyeCanvas = document.getElementById('dye-canvas');
+var colors = ['rgba(138,43,226,.45)','rgba(0,255,136,.32)','rgba(0,200,255,.35)','rgba(255,46,99,.32)'];
+var lastDye = 0;
+function spawnDye(x, y){
+  var now = Date.now();
+  if(now - lastDye < 60) return;
+  lastDye = now;
+  var b = document.createElement('div');
+  b.className = 'dye-blob';
+  var size = 60 + Math.random()*110;
+  b.style.width = size + 'px'; b.style.height = size + 'px';
+  b.style.background = colors[Math.floor(Math.random()*colors.length)];
+  b.style.left = x + 'px'; b.style.top = y + 'px';
+  dyeCanvas.appendChild(b);
+  setTimeout(function(){ b.remove(); }, 2200);
+}
+/* ================= 服务卡片光晕 ================= */
+document.querySelectorAll('.srv-card').forEach(function(card){
+  card.addEventListener('mousemove', function(e){
+    var r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+});
+/* ================= 跑马灯无缝 ================= */
+(function(){
+  var track = document.getElementById('mq-track');
+  track.innerHTML += track.innerHTML;
+})();
+/* ================= 均衡器 ================= */
+(function(){
+  var eq = document.getElementById('eq');
+  for(var i=0;i<48;i++){
+    var bar = document.createElement('i');
+    bar.style.animationDuration = (0.5 + Math.random()*0.9) + 's';
+    bar.style.animationDelay = (Math.random()*0.8) + 's';
+    eq.appendChild(bar);
+  }
+})();
+/* ================= 滚动揭示 ================= */
+(function(){
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, {threshold:0.12});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+})();
+/* ================= 案例横向拖拽 ================= */
+(function(){
+  var rail = document.getElementById('works-rail');
+  var bar = document.getElementById('rail-bar');
+  var down = false, startX = 0, startScroll = 0;
+  rail.addEventListener('mousedown', function(e){
+    down = true; startX = e.pageX; startScroll = rail.scrollLeft;
+    rail.classList.add('dragging'); cursor.classList.add('drag');
+  });
+  window.addEventListener('mouseup', function(){
+    down = false; rail.classList.remove('dragging'); cursor.classList.remove('drag');
+  });
+  window.addEventListener('mousemove', function(e){
+    if(!down) return;
+    e.preventDefault();
+    rail.scrollLeft = startScroll - (e.pageX - startX) * 1.4;
+  });
+  rail.addEventListener('scroll', function(){
+    var max = rail.scrollWidth - rail.clientWidth;
+    var ratio = max > 0 ? rail.scrollLeft / max : 0;
+    bar.style.width = (12 + ratio * 88) + '%';
+  });
+})();
+/* ================= 语录轮播 ================= */
+(function(){
+  var items = document.querySelectorAll('.quote-item');
+  var dotsWrap = document.getElementById('quote-dots');
+  var idx = 0, timer = null;
+  items.forEach(function(_, i){
+    var b = document.createElement('button');
+    if(i === 0) b.classList.add('on');
+    b.addEventListener('click', function(){ go(i); restart(); });
+    dotsWrap.appendChild(b);
+  });
+  var dots = dotsWrap.querySelectorAll('button');
+  function go(i){
+    idx = i;
+    items.forEach(function(it, k){ it.classList.toggle('active', k === i); });
+    dots.forEach(function(d, k){ d.classList.toggle('on', k === i); });
+  }
+  function restart(){
+    clearInterval(timer);
+    timer = setInterval(function(){ go((idx + 1) % items.length); }, 5000);
+  }
+  restart();
+})();
+/* ================= 环境音（WebAudio合成，无需音频文件） ================= */
+(function(){
+  var btn = document.getElementById('sound-toggle');
+  var ctx = null, nodes = [], on = false;
+  function build(){
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var master = ctx.createGain();
+    master.gain.value = 0.0;
+    master.connect(ctx.destination);
+    // 低音垫
+    var osc1 = ctx.createOscillator(); osc1.type = 'sine'; osc1.frequency.value = 55;
+    var g1 = ctx.createGain(); g1.gain.value = 0.5;
+    osc1.connect(g1); g1.connect(master); osc1.start();
+    // 微光泛音
+    var osc2 = ctx.createOscillator(); osc2.type = 'triangle'; osc2.frequency.value = 110.5;
+    var g2 = ctx.createGain(); g2.gain.value = 0.12;
+    osc2.connect(g2); g2.connect(master); osc2.start();
+    // 缓慢LFO呼吸
+    var lfo = ctx.createOscillator(); lfo.frequency.value = 0.12;
+    var lfoGain = ctx.createGain(); lfoGain.gain.value = 0.25;
+    lfo.connect(lfoGain); lfoGain.connect(g1.gain); lfo.start();
+    nodes = [master];
+    return master;
+  }
+  btn.addEventListener('click', function(){
+    on = !on;
+    btn.classList.toggle('on', on);
+    if(on){
+      var master = ctx ? nodes[0] : build();
+      if(ctx.state === 'suspended') ctx.resume();
+      master.gain.cancelScheduledValues(ctx.currentTime);
+      master.gain.linearRampToValueAtTime(0.14, ctx.currentTime + 1.2);
+    }else if(ctx){
+      nodes[0].gain.cancelScheduledValues(ctx.currentTime);
+      nodes[0].gain.linearRampToValueAtTime(0.0, ctx.currentTime + 0.8);
+    }
+  });
+})();
+/* ================= 弹窗 ================= */
+var modal = document.getElementById('modal');
+document.getElementById('open-modal').addEventListener('click', function(){ modal.classList.add('open'); });
+document.getElementById('m-close').addEventListener('click', function(){ modal.classList.remove('open'); });
+modal.addEventListener('click', function(e){ if(e.target === modal) modal.classList.remove('open'); });
+document.getElementById('contact-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  var fname = document.getElementById('f-name');
+  var fcontact = document.getElementById('f-contact');
+  var ftype = document.getElementById('f-type');
+  var fbrief = document.getElementById('f-brief');
+  if(!fname || !fcontact || !ftype) return;
+  try{
+    var arr = JSON.parse(localStorage.getItem('rangang_messages_v1') || '[]');
+    if(!Array.isArray(arr)) arr = [];
+    arr.unshift({
+      id: Date.now(),
+      name: (fname.value || '').trim(),
+      contact: (fcontact.value || '').trim(),
+      type: ftype.value || '',
+      brief: (fbrief.value || '').trim(),
+      time: new Date().toLocaleString('zh-CN', {hour12:false})
+    });
+    localStorage.setItem('rangang_messages_v1', JSON.stringify(arr));
+  }catch(err){}
+  try{
+    if(window.fetch && /^http/.test(location.protocol)){
+      fetch('/api/message', {
+        method:'POST',
+        headers:{'content-type':'application/json'},
+        body: JSON.stringify({
+          name: (fname.value || '').trim(),
+          contact: (fcontact.value || '').trim(),
+          type: ftype.value || '',
+          brief: (fbrief.value || '').trim()
+        })
+      }).catch(function(){});
+    }
+  }catch(err){}
+  try{
+    var cfg = SITE.config;
+    if(cfg.wx_enable === 'on' && cfg.wx_key){
+      var title = '染缸官网 · 新留言';
+      var desp = '称呼：' + (fname.value || '').trim() + '\n联系方式：' + (fcontact.value || '').trim() + '\n需求：' + (ftype.value || '') + ((fbrief.value || '').trim() ? '\n简述：' + (fbrief.value || '').trim() : '');
+      var url = '';
+      if(cfg.wx_service === 'pushplus'){
+        url = 'https://www.pushplus.plus/send?token=' + encodeURIComponent(cfg.wx_key) + '&title=' + encodeURIComponent(title) + '&content=' + encodeURIComponent(desp) + '&template=html';
+      }else{
+        url = 'https://sctapi.ftqq.com/' + encodeURIComponent(cfg.wx_key) + '.send?title=' + encodeURIComponent(title) + '&desp=' + encodeURIComponent(desp);
+      }
+      new Image().src = url;
+    }
+  }catch(err){}
+  document.getElementById('m-ok').style.display = 'block';
+  var form = e.target;
+  setTimeout(function(){
+    modal.classList.remove('open');
+    document.getElementById('m-ok').style.display = 'none';
+    form.reset();
+  }, 1800);
+});
+/* ================= 平滑锚点 ================= */
+document.querySelectorAll('a[href^="#"]').forEach(function(a){
+  a.addEventListener('click', function(e){
+    var target = document.querySelector(a.getAttribute('href'));
+    if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth'}); }
+  });
+});
+/* ================= HERO 视差 ================= */
+var heroLogo = document.getElementById('hero-logo');
+window.addEventListener('scroll', function(){
+  var y = window.scrollY;
+  if(y < window.innerHeight){
+    heroLogo.style.transform = 'translateY(' + (y * 0.15) + 'px)';
+    heroLogo.style.opacity = String(Math.max(0, 1 - y / (window.innerHeight * 0.8)));
+  }
+}, {passive:true});
+/* ================= 案例视频：悬停播放 / 点击放大 ================= */
+(function(){
+  var rail = document.getElementById('works-rail');
+  var box = document.getElementById('videobox');
+  if(!rail || !box) return;
+  var vbVideo = box.querySelector('video');
+  var vbTitle = box.querySelector('.vb-title');
+  var vbMeta = box.querySelector('.vb-meta');
+  var downX = 0, downY = 0, dragged = false;
+  function cardOf(el){ return el && el.closest ? el.closest('.work-card') : null; }
+  rail.addEventListener('pointerdown', function(e){
+    downX = e.clientX; downY = e.clientY; dragged = false;
+  }, {passive:true});
+  rail.addEventListener('pointermove', function(e){
+    if(Math.abs(e.clientX - downX) > 8 || Math.abs(e.clientY - downY) > 8) dragged = true;
+  }, {passive:true});
+  rail.addEventListener('mouseover', function(e){
+    var card = cardOf(e.target);
+    if(!card || card.contains(e.relatedTarget)) return;
+    var v = card.querySelector('video');
+    if(v && v.paused) v.play().catch(function(){});
+  });
+  rail.addEventListener('mouseout', function(e){
+    var card = cardOf(e.target);
+    if(!card || card.contains(e.relatedTarget)) return;
+    var v = card.querySelector('video');
+    if(v && !v.paused){ v.pause(); try{ v.currentTime = 0; }catch(err){} }
+  });
+  rail.addEventListener('click', function(e){
+    var card = cardOf(e.target);
+    if(!card || dragged) return;
+    var src = card.getAttribute('data-video');
+    if(!src) return;
+    vbVideo.src = src;
+    if(vbTitle) vbTitle.textContent = card.getAttribute('data-title') || '';
+    if(vbMeta) vbMeta.textContent = card.getAttribute('data-badge') || '';
+    box.classList.add('open');
+    box.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    vbVideo.play().catch(function(){});
+  });
+  function closeBox(){
+    box.classList.remove('open');
+    box.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    vbVideo.pause();
+    vbVideo.removeAttribute('src');
+    try{ vbVideo.load(); }catch(err){}
+  }
+  box.addEventListener('click', function(e){
+    if(e.target === box || e.target.classList.contains('vb-close')) closeBox();
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && box.classList.contains('open')) closeBox();
+  });
+})();
+</script>
+</body>
+</html>
