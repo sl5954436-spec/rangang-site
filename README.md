@@ -8,17 +8,15 @@
 - `_backup/` —— 历史版本
 - `_cloudflare/` —— 之前做的一版 Cloudflare D1/R2 后端（可选，目前未启用，留着以后需要云端同步再用）
 
-## 部署到 GitHub Pages
+## 部署到 GitHub Pages（已完成）
 
-仓库已推到 `https://github.com/sl5954436-spec/rangang-site`（Private）。
+- 线上地址：**https://sl5954436-spec.github.io/rangang-site/**
+- 代码仓库：`https://github.com/sl5954436-spec/rangang-site`（Public）
+- Pages 配置：Deploy from a branch → main → / (root)，每次 push 到 main 自动重新构建
 
-1. 打开仓库 → **Settings → Pages**
-2. Source 选 **Deploy from a branch**
-3. Branch 选 **main**，目录选 **/ (root)**，点 Save
-4. 等 1–2 分钟，Pages 会给一个 `https://sl5954436-spec.github.io/rangang-site/` 的地址
-5. 想绑 `ranggang.media`：在 Pages 页面填 Custom domain，然后去域名 DNS 加 CNAME 指向 `<用户名>.github.io`
+> 免费 GitHub 账号的 Pages 只支持 Public 仓库，所以这个仓库设置成了 Public。站点本身公开访问，代码里的 `_cloudflare/` 也一并公开（不含任何密钥，`.dev.vars` 已在 .gitignore 里）。
 
-Private 仓库的 Pages 站点默认也是公开可访问的（GitHub Pages 不支持访问控制），只是代码本身不公开。
+想绑 `ranggang.media`：Pages 页面填 Custom domain，然后在域名 DNS 加 CNAME 指向 `sl5954436-spec.github.io`。
 
 ## 改内容的流程（重点）
 
