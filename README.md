@@ -29,13 +29,8 @@
    打开 `http://127.0.0.1:8090/admin.html`
 2. 在后台改内容、上传图片/视频（本地模式会直接复制进 `assets/`）
 3. 点 **数据备份 → 导出发布页**，下载新的 `index.html`
-4. 用它覆盖 `H:\...\染缸官网\index.html`，然后：
-   ```powershell
-   git add .
-   git commit -m "content: 更新案例"
-   git push
-   ```
-5. GitHub Pages 自动重建，线上生效
+4. 用它覆盖 `H:\...\染缸官网\index.html`，然后双击 **`deploy.ps1`**（一键 add / commit / push，令牌存在同目录 `.git-token`，已被 gitignore）
+5. GitHub Pages 自动重建，约 1 分钟后线上生效
 
 > 后台右上角显示「本地模式」是正常的：静态站没有接口可连。之前那套 D1 云端同步在 `_cloudflare/` 里，需要时可以再启用。
 
