@@ -25,7 +25,7 @@ $b64 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token
 if ($LASTEXITCODE -eq 0) {
   Write-Host ""
   Write-Host "已推送，GitHub Pages 约 1 分钟后自动更新：" -ForegroundColor Green
-  Write-Host "https://sl5954436-spec.github.io/rangang-site/" -ForegroundColor Cyan
+  Write-Host "https://98zp.club/" -ForegroundColor Cyan
 } else {
   Write-Host "推送失败，请检查网络或令牌是否过期。" -ForegroundColor Red
 }
