@@ -10,13 +10,16 @@
 
 ## 部署到 GitHub Pages（已完成）
 
-- 线上地址：**https://sl5954436-spec.github.io/rangang-site/**
+- 线上地址：**https://98zp.club/**（自定义域名，DNS 在阿里云云解析）
+- 备用地址：https://sl5954436-spec.github.io/rangang-site/
 - 代码仓库：`https://github.com/sl5954436-spec/rangang-site`（Public）
 - Pages 配置：Deploy from a branch → main → / (root)，每次 push 到 main 自动重新构建
 
 > 免费 GitHub 账号的 Pages 只支持 Public 仓库，所以这个仓库设置成了 Public。站点本身公开访问，代码里的 `_cloudflare/` 也一并公开（不含任何密钥，`.dev.vars` 已在 .gitignore 里）。
 
-想绑 `ranggang.media`：Pages 页面填 Custom domain，然后在域名 DNS 加 CNAME 指向 `sl5954436-spec.github.io`。
+域名解析记录（阿里云云解析，NS 为 dns31/dns32.hichina.com）：
+- `@` A：185.199.108.153 / 185.199.109.153 / 185.199.110.153 / 185.199.111.153
+- `www` CNAME：sl5954436-spec.github.io（会跳回根域）
 
 ## 改内容的流程（重点）
 
