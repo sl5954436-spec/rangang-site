@@ -1,114 +1,69 @@
 # 染缸传媒官网 · RANGANG MEDIA
 
-单页官网（原生 HTML/CSS/JS）+ 后台 CMS + Cloudflare 云端内容库。
+夜店声光电 & 品牌一站式官网，纯静态单页（原生 HTML/CSS/JS，无构建、无依赖），直接托管在 GitHub Pages。
 
-- 静态站点：`index.html` / `admin.html` / `assets/`
-- 服务端接口：`functions/api/*`（Cloudflare Pages Functions）
-- 内容存储：Cloudflare **D1**（站点内容 JSON + 访客留言）
-- 媒体存储：Cloudflare **R2**（后台直传的图片 / 视频）
+- `index.html` —— 官网首页（首屏动效、服务、案例视频、流程、主理、团队、留言）
+- `admin.html` —— 后台 CMS（可视化改内容、上传图片/视频、导出发布页）
+- `assets/` —— 图片与案例视频
+- `_backup/` —— 历史版本
+- `_cloudflare/` —— 之前做的一版 Cloudflare D1/R2 后端（可选，目前未启用，留着以后需要云端同步再用）
 
-## 为什么托管选 Cloudflare Pages，而不是 GitHub Pages
+## 部署到 GitHub Pages
 
-GitHub Pages 只能托管静态文件，**没有服务端**，D1 数据库、后台上传接口都跑不起来（后台会退回“只存本机浏览器”）。
+仓库已推到 `https://github.com/sl5954436-spec/rangang-site`（Private）。
 
-推荐的组合是：**代码放 GitHub，托管走 Cloudflare Pages**。Cloudflare Pages 支持直接连 GitHub 仓库，推送即自动部署；D1 和 R2 都在同一账号下绑定，后台保存后所有访客看到的是同一份内容。
+1. 打开仓库 → **Settings → Pages**
+2. Source 选 **Deploy from a branch**
+3. Branch 选 **main**，目录选 **/ (root)**，点 Save
+4. 等 1–2 分钟，Pages 会给一个 `https://sl5954436-spec.github.io/rangang-site/` 的地址
+5. 想绑 `ranggang.media`：在 Pages 页面填 Custom domain，然后去域名 DNS 加 CNAME 指向 `<用户名>.github.io`
 
-如果你确实只想用 GitHub Pages，也能跑，但只能得到静态页面，后台保存仅对本机浏览器有效（需要改数据就只能改 HTML 或提交 JSON）。
+Private 仓库的 Pages 站点默认也是公开可访问的（GitHub Pages 不支持访问控制），只是代码本身不公开。
 
-## 目录
+## 改内容的流程（重点）
 
-```
-index.html            官网首页（读取 /api/site，失败时回落 localStorage / 内置默认）
-admin.html            后台 CMS（检测到 /api/site 自动切 D1 模式，否则本地模式）
-assets/               静态图 + 示例视频（仓库自带，线上优先走 R2）
-functions/api/site.js       GET 读取内容 / PUT 保存内容（需 ADMIN_TOKEN）
-functions/api/upload.js     POST 上传图片视频到 R2（需 ADMIN_TOKEN）
-functions/api/message.js    POST 访客留言 / GET 列表 / DELETE 删除
-functions/media/[[path]].js GET 读取 R2 文件（支持 Range，视频可拖动）
-migrations/0001_init.sql    D1 建表
-schema.sql                  同上，供控制台手动执行
-wrangler.toml               Pages / D1 / R2 绑定配置
-```
+纯静态站没有数据库，后台改完必须“导出 + 推送”才会生效：
 
-## 首次部署
+1. 本地起个预览服务（任选其一）：
+   ```powershell
+   python -m http.server 8090
+   ```
+   打开 `http://127.0.0.1:8090/admin.html`
+2. 在后台改内容、上传图片/视频（本地模式会直接复制进 `assets/`）
+3. 点 **数据备份 → 导出发布页**，下载新的 `index.html`
+4. 用它覆盖 `H:\...\染缸官网\index.html`，然后：
+   ```powershell
+   git add .
+   git commit -m "content: 更新案例"
+   git push
+   ```
+5. GitHub Pages 自动重建，线上生效
 
-前置：Node 18+、Cloudflare 账号、已安装依赖（`npm install`）。
+> 后台右上角显示「本地模式」是正常的：静态站没有接口可连。之前那套 D1 云端同步在 `_cloudflare/` 里，需要时可以再启用。
 
-```powershell
-# 1. 登录 Cloudflare（会弹出浏览器授权）
-npx wrangler login
+## 后台功能
 
-# 2. 建 D1 数据库，记下输出里的 database_id
-npx wrangler d1 create rangang
+- 站点配置：品牌名、标语、标签、邮箱电话、微信推送（Server酱 / PushPlus）
+- 服务配方 / 案例战绩 / 流程步骤 / 团队 / 主理人 / 语录：增删改
+- 案例支持**视频**：上传后自动填路径，卡片悬停播放、点击放大
+- 数据备份：导出 JSON（存档）、导入 JSON（恢复）、导出发布页（生成线上 index.html）
 
-# 3. 把 database_id 填进 wrangler.toml 的 REPLACE_WITH_YOUR_D1_DATABASE_ID
+## 留言说明
 
-# 4. 建 R2 桶（也可在控制台建）
-npx wrangler r2 bucket create rangang-media
+静态站收不到访客表单（提交内容只存在访客自己的浏览器）。要拿到线索，在「站点配置」里开启微信通知：填 Server酱 SendKey 或 PushPlus token，访客提交时你的微信会收到推送。
 
-# 5. 建表（远程）
-npx wrangler d1 execute rangang --remote --file=./schema.sql
-
-# 6. 设置后台密码（把 xxx 换成你自己的长密码）
-npx wrangler pages secret put ADMIN_TOKEN --project-name rangang-site
-
-# 7. 首次部署
-npx wrangler pages deploy . --project-name rangang-site
-```
-
-部署完控制台会给一个 `*.pages.dev` 域名。把 `ranggang.media` 接进来：Cloudflare 控制台 → Workers & Pages → 你的项目 → Custom domains → 添加域名，按提示改 DNS。
-
-### 用 GitHub 自动部署（推荐）
-
-1. 在 GitHub 建一个空仓库（Private 即可）
-2. 本仓库推上去：
+## 本机工具链
 
 ```powershell
-git init
-git add .
-git commit -m "init: 官网 + CMS + Cloudflare D1/R2"
-git branch -M main
-git remote add origin https://github.com/<你的账号>/<仓库名>.git
-git push -u origin main
+# 预览
+python -m http.server 8090 --directory "H:\Users\Administrator\Desktop\染缸文化传媒\染缸官网"
+
+# 推送（首次需要 GitHub 授权）
+git push
 ```
 
-3. Cloudflare 控制台 → Workers & Pages → Create → Pages → Connect to Git → 选仓库
-4. 构建配置：Framework 选 None，Build command 留空，Build output directory 填 `/`
-5. Settings → Variables and Secrets 里加 `ADMIN_TOKEN`（类型 Secret），并在 Settings → Functions → D1 / R2 绑定 `DB`、`MEDIA`
+## 备注
 
-之后每次 `git push` 都会自动重建发布。
-
-## 本地开发
-
-```powershell
-copy .dev.vars.example .dev.vars   # 填本地 ADMIN_TOKEN
-npm run dev                       # http://127.0.0.1:8788
-```
-
-本地 D1 建表：`npx wrangler d1 execute DB --local --file=./schema.sql`（或在 `npm run dev` 起来后对 `.wrangler/state` 下的 sqlite 执行）。
-
-## 后台使用
-
-- 打开 `/admin.html`，右上角出现「D1 在线同步」即表示已连云端；显示「本地模式」说明没检测到接口。
-- 第一次点保存/上传会要求输入 `ADMIN_TOKEN`，输入后记在本机 localStorage，可在浏览器控制台执行 `localStorage.removeItem('rangang_admin_token')` 重设。
-- 案例的封面图和视频都用「上传」按钮，线上会传到 R2 并回填 `/media/...` 路径；本地模式则复制进 `assets/`。
-- 访客留言进 D1，后台「留言管理」点刷新即可看到。
-- 「数据备份」里的导出 JSON 是整包内容，可随时导入恢复。
-
-## 接口速查
-
-| 方法 | 路径 | 鉴权 | 说明 |
-| --- | --- | --- | --- |
-| GET | `/api/site` | 公开 | 读取站点内容，空库返回 `data:null` |
-| PUT | `/api/site` | `x-admin-token` | 整包保存，上限 1MB |
-| POST | `/api/message` | 公开 | 访客提交留言 |
-| GET | `/api/message` | `x-admin-token` | 最近 200 条留言 |
-| DELETE | `/api/message?id=1` / `?all=1` | `x-admin-token` | 删除单条 / 清空 |
-| POST | `/api/upload` | `x-admin-token` | 上传媒体到 R2，≤60MB |
-| GET | `/media/<key>` | 公开 | 读取 R2 文件，支持 Range |
-
-## 注意
-
-- `wrangler.toml` 里的 D1 ID、R2 桶名属于非敏感配置，可以提交；`ADMIN_TOKEN` 只能放 Secret，**不要写进仓库**。
-- `.dev.vars`、`.wrangler/`、`node_modules/` 已在 `.gitignore` 排除。
-- 站点内容整包存一行 JSON，保存即覆盖；多人同时改会互相覆盖，目前是单人后台的使用方式。
+- 图片/视频建议压到 720p、单个 3MB 以内，手机打开更顺
+- 案例视频命名随意，后台会按上传的文件名生成路径
+- `_backup/`、`*.bak-*`、`index..html` 都在 `.gitignore` 里，不会进仓库

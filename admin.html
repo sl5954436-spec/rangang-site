@@ -641,8 +641,8 @@ function renderDashboard(){
     '</div>' +
     '<div class="dash-note">' +
     '<b>数据状态：</b>' + (API.mode
-      ? '已连接 Cloudflare D1，点「保存」后内容写入云端，任何人打开官网都是最新版本；访客留言同样存进 D1。'
-      : '本地模式（未检测到 /api/site）：修改存在浏览器 localStorage，只有本机同一浏览器可见；部署到 Cloudflare Pages 后自动切到 D1 同步。') +
+      ? '已连接云端接口，点「保存」后内容写入数据库，所有访客看到同一份内容。'
+      : '本地模式（纯静态站，没有后端）：内容存在本机浏览器。改完后到「数据备份 → 导出发布页」下载新的 index.html，替换仓库里的同名文件并 push，GitHub Pages 上的官网才会更新。') +
     '<br><b>备份提醒：</b>定期在「数据备份」模块导出 JSON，换电脑或清缓存前先导出，避免内容丢失。' +
     '<div class="quick-row">' +
     '<button class="btn primary" data-nav="services">管理服务配方</button>' +
@@ -673,7 +673,7 @@ function renderMessages(){
       '<td><div class="row-act"><button class="del" data-act="delmsg" data-idx="' + i + '">删除</button></div></td></tr>';
   }).join('') : '<tr><td colspan="6"><div class="empty">暂无留言。访客在官网「入缸申请」提交后会自动出现在这里。</div></td></tr>';
   view.innerHTML =
-    '<div class="panel-head"><div><h2>留言管理</h2><p>官网「入缸申请」表单的访客留言，提交后实时同步到此处。</p></div>' +
+    '<div class="panel-head"><div><h2>留言管理</h2><p>纯静态站没有数据库：访客提交只存在他本机浏览器。想收到线索，请在「站点配置」开启微信通知（Server酱 / PushPlus），下面这里是本机测试记录。</p></div>' +
     '<div style="display:flex;gap:10px">' +
     '<button class="btn" data-act="refreshmsg">刷新</button>' +
     (arr.length ? '<button class="btn danger" data-act="clearmsg">清空全部</button>' : '') + '</div></div>' +
@@ -685,6 +685,8 @@ function renderBackup(){
   view.innerHTML =
     '<div class="panel-head"><div><h2>数据备份</h2><p>导出 / 导入 / 恢复，为你的内容上双保险。</p></div></div>' +
     '<div class="backup-grid">' +
+    '<div class="bk-card"><h3>🚀 导出发布页</h3><p>纯静态站没有数据库。把当前内容写进一份新的 <code>index.html</code>，替换仓库里的同名文件并 push，GitHub Pages 上的官网就更新了。</p>' +
+    '<button class="btn primary" id="bk-publish">导出 index.html</button></div>' +
     '<div class="bk-card"><h3>⬇ 导出备份</h3><p>将全部内容保存为 JSON 文件，可存档或迁移到其他电脑。建议每次大改后导出一次。</p>' +
     '<button class="btn primary" id="bk-export">导出 JSON 文件</button></div>' +
     '<div class="bk-card"><h3>⬆ 导入恢复</h3><p>选择之前导出的 JSON 文件，覆盖当前内容。导入后请刷新官网查看。</p>' +
@@ -693,6 +695,7 @@ function renderBackup(){
     '<button class="btn danger" id="bk-reset">恢复默认内容</button></div>' +
     '</div>';
   document.getElementById('bk-export').addEventListener('click', exportData);
+  document.getElementById('bk-publish').addEventListener('click', exportSiteHtml);
   document.getElementById('bk-import').addEventListener('click', function(){ document.getElementById('import-file').click(); });
   document.getElementById('bk-reset').addEventListener('click', function(){
     if(confirm('确定恢复为默认内容？当前所有修改将被覆盖。')){
@@ -700,6 +703,32 @@ function renderBackup(){
       save(); render(); toast('已恢复默认内容');
     }
   });
+}
+async function exportSiteHtml(){
+  try{
+    var res = await fetch('index.html?ts=' + Date.now(), { cache:'no-store' });
+    if(!res.ok) throw new Error('读取 index.html 失败：HTTP ' + res.status);
+    var html = await res.text();
+    var marker = 'var DEFAULT_DATA = ';
+    var start = html.indexOf(marker);
+    var end = start >= 0 ? html.indexOf('\n};', start) : -1;
+    if(start < 0 || end < 0) throw new Error('页面里没找到数据块，结构可能被改过');
+    var payload = JSON.parse(JSON.stringify(SITE));
+    payload._v = 4;
+    var pretty = JSON.stringify(payload, null, 2);
+    html = html.slice(0, start) + marker + pretty + ';' + html.slice(end + 3);
+    var blob = new Blob([html], { type:'text/html;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'index.html';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    toast('已导出 index.html · 覆盖仓库同名文件后 push 即发布');
+  }catch(e){
+    toast('导出失败：' + (e && e.message ? e.message : e), true);
+  }
 }
 function exportData(){
   try{
